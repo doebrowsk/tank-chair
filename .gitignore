@@ -1,3 +1,6 @@
+# Ros build locations
+build/
+
 # Compiled Object files
 *.slo
 *.lo
