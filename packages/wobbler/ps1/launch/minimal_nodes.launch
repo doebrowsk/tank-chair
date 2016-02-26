@@ -1,0 +1,5 @@
+<launch> 
+<node name= "minimal_publisher" pkg= "ps1" type= "minimal_publisher" /> 
+<node name= "minimal_subscriber" pkg= "ps1" type= "minimal_subscriber" /> 
+<node name= "minimal_commander" pkg= "ps1" type= "minimal_commander" /> 
+</launch> 
