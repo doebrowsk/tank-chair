@@ -1,0 +1,19 @@
+open 192.168.0.100
+user anon password
+ls
+put mainRunner.out MainRunner.out
+put MainCRIO.out
+put NiFpga.out
+put NiFpga_mainFPGA.lvbitx
+mkdir config
+put config/sensorFusion.ini
+put config/odometry.ini
+put config/steering.ini
+put config/yaw.ini
+put config/CRIO.ini
+put config/GPS.ini
+put config/log.ini
+put config/kalman.ini
+put config/compass.ini
+put config/pid.ini
+bye
