@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="62">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="f6" displayName="Diagnostics" projectFiles="true">
+        <itemPath>src/hardwarediagnostics.c</itemPath>
+        <itemPath>src/hardwarediagnostics.h</itemPath>
+        <itemPath>src/matrixlibtestppc.c</itemPath>
+        <itemPath>src/matrixlibtestppc.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2"
+                     displayName="MicroProcessorInterface"
+                     projectFiles="true">
+        <itemPath>src/NiFpga.c</itemPath>
+        <itemPath>src/NiFpga.h</itemPath>
+        <itemPath>src/NiFpga_mainFPGA.h</itemPath>
+        <itemPath>src/fpga.c</itemPath>
+        <itemPath>src/fpga.h</itemPath>
+        <itemPath>src/microprocessorinterface.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f4" displayName="Networking" projectFiles="true">
+        <itemPath>src/packets.h</itemPath>
+        <itemPath>src/receiver.c</itemPath>
+        <itemPath>src/receiver.h</itemPath>
+        <itemPath>src/sender.c</itemPath>
+        <itemPath>src/sender.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f1" displayName="PSO" projectFiles="true">
+        <itemPath>src/PSOmain.c</itemPath>
+        <itemPath>src/PSOmain.h</itemPath>
+        <itemPath>src/basicfusion.c</itemPath>
+        <itemPath>src/basicfusion.h</itemPath>
+        <itemPath>src/dkalman.c</itemPath>
+        <itemPath>src/dkalman.h</itemPath>
+        <itemPath>src/gps.c</itemPath>
+        <itemPath>src/gps.h</itemPath>
+        <itemPath>src/kalman.c</itemPath>
+        <itemPath>src/kalman.h</itemPath>
+        <itemPath>src/odometry.c</itemPath>
+        <itemPath>src/odometry.h</itemPath>
+        <itemPath>src/sensor.c</itemPath>
+        <itemPath>src/sensor.h</itemPath>
+        <itemPath>src/sensorfusion.c</itemPath>
+        <itemPath>src/sensorfusion.h</itemPath>
+        <itemPath>src/statevariable.c</itemPath>
+        <itemPath>src/statevariable.h</itemPath>
+        <itemPath>src/yaw.c</itemPath>
+        <itemPath>src/yaw.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f7" displayName="Sensors" projectFiles="true">
+        <itemPath>src/sonar.c</itemPath>
+        <itemPath>src/sonar.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f5" displayName="Steering" projectFiles="true">
+        <itemPath>src/differentialSteering.c</itemPath>
+        <itemPath>src/differentialSteering.h</itemPath>
+        <itemPath>src/wagonSteering.c</itemPath>
+        <itemPath>src/wagonSteering.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f3" displayName="Util" projectFiles="true">
+        <itemPath>src/MatrixLibTest.c</itemPath>
+        <itemPath>src/dictionary.c</itemPath>
+        <itemPath>src/dictionary.h</itemPath>
+        <itemPath>src/harliealloc.c</itemPath>
+        <itemPath>src/harliealloc.h</itemPath>
+        <itemPath>src/harlielog.c</itemPath>
+        <itemPath>src/harlielog.h</itemPath>
+        <itemPath>src/iniparser.c</itemPath>
+        <itemPath>src/iniparser.h</itemPath>
+        <itemPath>src/matrixLib.c</itemPath>
+        <itemPath>src/matrixLib.h</itemPath>
+        <itemPath>src/matrixLibStack.c</itemPath>
+        <itemPath>src/matrixLibStack.h</itemPath>
+        <itemPath>src/minigzip.c</itemPath>
+        <itemPath>src/minigzip.h</itemPath>
+        <itemPath>src/sharedVariables.c</itemPath>
+        <itemPath>src/sharedVariables.h</itemPath>
+        <itemPath>src/stringextra.c</itemPath>
+        <itemPath>src/stringextra.h</itemPath>
+        <itemPath>src/sysutils.c</itemPath>
+        <itemPath>src/sysutils.h</itemPath>
+        <itemPath>src/timerutils.c</itemPath>
+        <itemPath>src/timerutils.h</itemPath>
+        <itemPath>src/vector_math.c</itemPath>
+        <itemPath>src/vector_math.h</itemPath>
+        <itemPath>src/zconf.h</itemPath>
+        <itemPath>src/zlib.h</itemPath>
+      </logicalFolder>
+      <itemPath>src/MainCRIO.c</itemPath>
+      <itemPath>src/MainCRIO.h</itemPath>
+      <itemPath>src/mainRunner.c</itemPath>
+      <itemPath>src/mainRunner.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>src</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU_1|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Debug_PPC" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU_1|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>
