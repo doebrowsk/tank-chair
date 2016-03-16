@@ -5,7 +5,7 @@
 
 
 ros::Publisher ch1, ch2;
-
+float MAGIC_NUM = 0.833;
 void myCallback(const geometry_msgs::Twist& message_holder) 
 {
 	float v1,v2;
@@ -17,8 +17,8 @@ void myCallback(const geometry_msgs::Twist& message_holder)
 	roboteq_msgs::Command cmd1, cmd2;
 	cmd1.mode = 0;
 	cmd2.mode = 0;
-	v1*= 100;
-	v2*= 100;
+	v1*= MAGIC_NUM;
+	v2*= MAGIC_NUM;
 	cmd1.setpoint = v1;
 	cmd2.setpoint = v2;
 
