@@ -27,7 +27,7 @@ setconfig(_UVL, 170)
 
 for ch = 1 andwhile ch <= MAX_CHANNELS evaluate ch++
 	' Encoder, speed config (p208, p221)
-	setconfig(_EMOD, ch, 50)'???
+	setconfig(_EMOD, ch, ch*16 + 2)'???
 	setconfig(_EPPR, ch, 1000)
 	setconfig(_MXRPM, ch, 1000)
 	setconfig(_CLERD, ch, 0)
