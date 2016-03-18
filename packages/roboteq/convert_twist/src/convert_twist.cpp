@@ -7,7 +7,7 @@
 //and publishes roboteq_msgs to the 2 channels
 ros::Publisher ch1, ch2;
 
-float MAX_COMMAND = 205.0;
+float MAX_COMMAND = 721.0;
 float MAX_SPEED = 1.22;
 float BASE_RADIUS = 0.3;
 
