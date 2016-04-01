@@ -1,0 +1,41 @@
+digraph G {
+node [shape=box];
+"base_link" [label="base_link"];
+"left0_wheel" [label="left0_wheel"];
+"left1_wheel" [label="left1_wheel"];
+"left2_wheel" [label="left2_wheel"];
+"left3_wheel" [label="left3_wheel"];
+"left4_wheel" [label="left4_wheel"];
+"leftbig_big_wheel" [label="leftbig_big_wheel"];
+"right0_wheel" [label="right0_wheel"];
+"right1_wheel" [label="right1_wheel"];
+"right2_wheel" [label="right2_wheel"];
+"right3_wheel" [label="right3_wheel"];
+"right4_wheel" [label="right4_wheel"];
+"rightbig_big_wheel" [label="rightbig_big_wheel"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"base_link" -> "left0_wheel_joint" [label="xyz: -0.5 0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"left0_wheel_joint" -> "left0_wheel"
+"base_link" -> "left1_wheel_joint" [label="xyz: -0.3 0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"left1_wheel_joint" -> "left1_wheel"
+"base_link" -> "left2_wheel_joint" [label="xyz: 0 0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"left2_wheel_joint" -> "left2_wheel"
+"base_link" -> "left3_wheel_joint" [label="xyz: 0.26 0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"left3_wheel_joint" -> "left3_wheel"
+"base_link" -> "left4_wheel_joint" [label="xyz: 0.5 0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"left4_wheel_joint" -> "left4_wheel"
+"base_link" -> "leftbig_big_wheel_joint" [label="xyz: -0.33125 0.26 0.135 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"leftbig_big_wheel_joint" -> "leftbig_big_wheel"
+"base_link" -> "right0_wheel_joint" [label="xyz: -0.5 -0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"right0_wheel_joint" -> "right0_wheel"
+"base_link" -> "right1_wheel_joint" [label="xyz: -0.3 -0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"right1_wheel_joint" -> "right1_wheel"
+"base_link" -> "right2_wheel_joint" [label="xyz: 0 -0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"right2_wheel_joint" -> "right2_wheel"
+"base_link" -> "right3_wheel_joint" [label="xyz: 0.26 -0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"right3_wheel_joint" -> "right3_wheel"
+"base_link" -> "right4_wheel_joint" [label="xyz: 0.5 -0.26 -0.3 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"right4_wheel_joint" -> "right4_wheel"
+"base_link" -> "rightbig_big_wheel_joint" [label="xyz: -0.33125 -0.26 0.135 \nrpy: 1.13367e-05 1.5708 1.57081"]
+"rightbig_big_wheel_joint" -> "rightbig_big_wheel"
+}

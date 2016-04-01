@@ -1,0 +1,389 @@
+<?xml version="1.0"?>
+<robot 
+     xmlns:xacro="http://www.ros.org/wiki/xacro" name="sentry">
+     <!-- define the base-link origin to lie at floor level, between the drive wheels-->
+     <!--main body is a simple box; origin is a center of box-->
+    <xacro:property name="bodylen" value="1.0" />
+    <xacro:property name="bodywidth" value="0.3" />
+    <xacro:property name="bodyheight" value="0.5" />
+    <xacro:property name="bodyclearance" value="0.4" />  <!--clearance from bottom of box to ground--> 
+
+    <!-- placement of main body relative to base link frame -->
+    <xacro:property name="bodyOX" value="${-half_bodylen}" />  
+    <xacro:property name="bodyOY" value="0" />   
+    <xacro:property name="bodyOZ" value="0.45" />
+    
+    <xacro:property name="mastlen" value="${bodywidth/10}" />
+    <xacro:property name="mastwidth" value="${bodywidth}" />
+    <xacro:property name="mastheight" value="${1.3*bodyheight}" />
+
+    <xacro:property name="lidar_cube_size" value="0.2" />
+
+    <!-- define the wheel dimensions-->
+    <xacro:property name="tirediam" value="0.2" />
+    <xacro:property name="tirerad" value="${tirediam/2.0}" />    
+    <xacro:property name="tirewidth" value="0.2" />
+
+    <xacro:property name="bigtirediam" value="0.27" />
+    <xacro:property name="bigtirerad" value="${bigtirediam/2.0}" />    
+    <xacro:property name="bigtirewidth" value="0.2" />
+    <!-- "track" is the distance between the wheels -->
+    <xacro:property name="track" value=".52" />
+
+    <xacro:property name="tinywheelspacing" value=".005" />
+    <!-- spacing between wheels on the same side -->
+    <xacro:property name="wheelspacing" value="${(bodylen - 4*tirediam - tinywheelspacing)/3}" />
+
+    <xacro:property name="M_PI" value="3.1415926535897931" />
+    
+    <!--here is a default inertia matrix with small, but legal values; use this when don't need accuracy for I -->
+    <!--model will assign inertia matrix dominated by main body box -->
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="0.01" ixy="0.0" ixz="0.0"
+         iyy="0.01" iyz="0.0"
+         izz="0.01" />
+        </inertial>
+    </xacro:macro>
+    <!-- left = 1 if its the left wheel -1 if its the right wheel. displacement says how back/forward 
+    the wheel is from the center-->
+    <xacro:macro name="wheel" params="prefix left displacement">
+        <link name="${prefix}_wheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="${tirerad}" length="${tirewidth}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${tirerad}" length="${tirewidth}"/>
+                </geometry>
+            </collision>
+            <inertial>
+            <!--assign inertial properties to drive wheels -->
+            <mass value="1" />
+            <inertia ixx="0.1" ixy="0" ixz="0"
+              iyy="0.1" iyz="0"
+              izz="0.1" />
+        </inertial>
+        </link>
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <axis xyz="0 0 1"/>
+            <parent link="base_link"/>
+            <child link="${prefix}_wheel"/>
+            
+            <!--
+            <origin xyz="0 ${left*track/2} ${tirerad}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
+            -->
+
+            <origin xyz="${displacement} ${left*track/2} ${-bodyheight/2}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
+
+            <limit effort="100" velocity="15" />
+            <joint_properties damping="0.0" friction="0.0" />
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="big_wheel" params="prefix left displacement">
+        <link name="${prefix}_big_wheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="${bigtirerad}" length="${bigtirewidth}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${bigtirerad}" length="${bigtirewidth}"/>
+                </geometry>
+            </collision>
+            <inertial>
+            <!--assign inertial properties to drive wheels -->
+            <mass value="1.5" />
+            <inertia ixx="0.1" ixy="0" ixz="0"
+              iyy="0.1" iyz="0"
+              izz="0.1" />
+        </inertial>
+        </link>
+        <joint name="${prefix}_big_wheel_joint" type="continuous">
+            <axis xyz="0 0 1"/>
+            <parent link="base_link"/>
+            <child link="${prefix}_big_wheel"/>
+            <origin xyz="${displacement} ${left*track/2} ${bigtirerad}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
+            <limit effort="100" velocity="15" />
+            <joint_properties damping="0.0" friction="0.0" />
+        </joint>
+    </xacro:macro>
+   
+    <link name="mast">
+        <visual>
+            <geometry>
+                <box size="${mastlen} ${mastwidth} ${mastheight}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${mastlen} ${mastwidth} ${mastheight}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <!--assign almost all the mass to the main body box; set m= 100kg; treat I as approx m*r^2 -->
+            <mass value="2" />
+            <inertia ixx="10" ixy="0" ixz="0"
+              iyy="10" iyz="0"
+              izz="10" />
+        </inertial>
+    </link>
+
+    <joint name="masttobase" type="fixed">
+        <parent link="base_link"/>
+        <child link="mast"/>
+        <origin xyz="${bodylen/4} 0 ${mastheight/2 + bodyheight/2}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
+            </geometry>
+
+            <!--
+            <origin xyz="${bodyOX} ${bodyOY} ${bodyOZ}" rpy="0 0 0"/>
+            -->
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
+            </geometry>
+            <!--
+            <origin xyz="${bodyOX} ${bodyOY} ${bodyOZ}" rpy="0 0 0"/>
+            -->
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </collision>
+        <inertial>
+            <!--assign almost all the mass to the main body box; set m= 100kg; treat I as approx m*r^2 -->
+            <mass value="50" />
+            <inertia ixx="10" ixy="0" ixz="0"
+              iyy="10" iyz="0"
+              izz="10" />
+        </inertial>
+    </link>
+
+    <!-- add a simulated lidar, including visual, collision and inertial properties, and physics simulation-->
+  <link name="lidar_link">
+      <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <!-- coarse LIDAR model; a simple box -->
+              <box size="${lidar_cube_size} ${lidar_cube_size} ${lidar_cube_size}"/>
+          </geometry>
+      </collision>
+
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+              <box size="${lidar_cube_size} ${lidar_cube_size} ${lidar_cube_size}" />
+          </geometry>
+          <material name="sick_grey">
+              <color rgba="0.7 0.5 0.3 1.0"/>
+          </material>
+      </visual>
+
+      <inertial>
+          <mass value="4.0" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+      </inertial>
+  </link>
+  <!--the above displays a box meant to imply Lidar-->
+
+  <joint name="lidar_joint" type="fixed">
+      <axis xyz="0 1 0" />
+      <origin xyz="${bodylen/2 + lidar_cube_size/2} 0 ${lidar_cube_size/2 - bodyheight/2}" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="lidar_link"/>
+  </joint>
+
+    <!-- here is the gazebo plug-in to simulate a lidar sensor -->
+  <gazebo reference="lidar_link">
+    <sensor type="gpu_ray" name="sick_lidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>181</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>80.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_lidar_controller" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>/scan</topicName>
+        <frameName>lidar_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>  
+
+
+
+    
+
+
+
+
+
+
+
+
+
+ 
+
+    <!-- front wheels -->
+    <xacro:wheel prefix="left4" left="1" displacement="${(bodylen/2)}"/>
+    <xacro:wheel prefix="right4" left="-1" displacement="${(bodylen/2)}"/>
+    <xacro:wheel prefix="left3" left="1" displacement="${bodylen/2 - tirediam - wheelspacing}"/>
+    <xacro:wheel prefix="right3" left="-1" displacement="${bodylen/2 - tirediam - wheelspacing)}"/>
+
+    <!-- center two wheels -->
+    <xacro:wheel prefix="left2" left="1" displacement="${bodylen/2 - 2*tirediam - 2*wheelspacing}"/>
+    <xacro:wheel prefix="right2" left="-1" displacement="${bodylen/2 - 2*tirediam - 2*wheelspacing}"/>
+ 
+    <!-- rear wheels -->
+    <xacro:wheel prefix="left1" left="1" displacement="${-(bodylen/2 - tirediam - tinywheelspacing)}"/>
+    <xacro:wheel prefix="right1" left="-1" displacement="${-(bodylen/2 - tirediam - tinywheelspacing)}"/>
+    <xacro:wheel prefix="left0" left="1" displacement="${-bodylen/2}"/>
+    <xacro:wheel prefix="right0" left="-1" displacement="${-bodylen/2}"/>
+
+    <!-- big wheels -->
+    <xacro:big_wheel prefix="left" left="1" displacement="${-(bodylen/2 - 1.25*bigtirerad)}"/>
+    <xacro:big_wheel prefix="right" left="-1" displacement="${-(bodylen/2 - 1.25*bigtirerad)}"/>
+    
+<!-- 
+    <xacro:macro name="wheel_controller_plugin" params="wheelnum">
+        <plugin name="${wheelnum}_wheel_controller" filename="libgazebo_ros_diff_drive.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>100</updateRate>
+            <leftJoint>right${wheelnum}_wheel_joint</leftJoint>
+            <rightJoint>left${wheelnum}_wheel_joint</rightJoint>
+            <wheelSeparation>${track}</wheelSeparation>
+            <wheelDiameter>${tirediam}</wheelDiameter>
+            <torque>200</torque>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>base_link</robotBaseFrame>
+            <publishWheelTF>true</publishWheelTF>
+            <publishWheelJointState>true</publishWheelJointState>
+        </plugin>
+    </xacro:macro>
+ -->
+
+    <xacro:macro name="wheel_controller_plugin" params="wheelset1 wheelset2">
+      <plugin name="${wheelset1}_${wheelset2}_skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+        <updateRate>100.0</updateRate>
+        <robotNamespace>/</robotNamespace>
+        <leftFrontJoint>left${wheelset1}_wheel_joint</leftFrontJoint>
+        <rightFrontJoint>right${wheelset1}_wheel_joint</rightFrontJoint>
+        <leftRearJoint>left${wheelset2}_wheel_joint</leftRearJoint>
+        <rightRearJoint>right${wheelset2}_wheel_joint</rightRearJoint>
+        <wheelSeparation>${track}</wheelSeparation>
+        <wheelDiameter>${tirediam}</wheelDiameter>
+        <robotBaseFrame>base_link</robotBaseFrame>
+        <torque>200</torque>
+        <topicName>cmd_vel</topicName>
+      </plugin>
+    </xacro:macro>
+
+    <gazebo>
+
+        <!-- controls for drive wheels -->
+        <xacro:wheel_controller_plugin wheelset1="4" wheelset2="0"/>
+        <xacro:wheel_controller_plugin wheelset1="3" wheelset2="1"/>
+        <xacro:wheel_controller_plugin wheelset1="2" wheelset2="2"/>
+
+
+        <!-- 
+        <xacro:wheel_controller_plugin wheelnum="0" />
+        <xacro:wheel_controller_plugin wheelnum="1" />
+        <xacro:wheel_controller_plugin wheelnum="2" />
+        <xacro:wheel_controller_plugin wheelnum="3" />
+        <xacro:wheel_controller_plugin wheelnum="4" />
+         -->
+<!-- 
+        <plugin name="big_wheel_controller" filename="libgazebo_ros_diff_drive.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>100</updateRate>
+            <leftJoint>left_big_wheel_joint</leftJoint>
+            <rightJoint>right_big_wheel_joint</rightJoint>
+            <wheelSeparation>${track}</wheelSeparation>
+            <wheelDiameter>${bigtirediam}</wheelDiameter>
+            <torque>200</torque>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>base_link</robotBaseFrame>
+            <publishWheelTF>true</publishWheelTF>
+            <publishWheelJointState>true</publishWheelJointState>
+        </plugin>
+ -->
+
+
+    </gazebo>
+
+
+
+    <xacro:macro name="friction_macro" params="wheelnum constant">
+        <gazebo reference="left${wheelnum}_wheel"> 
+            <mu1>${constant}</mu1>
+            <mu2>${constant}</mu2>
+            <material >Gazebo/Black </material >
+        </gazebo>
+        <gazebo reference="right${wheelnum}_wheel"> 
+            <mu1>${constant}</mu1>
+            <mu2>${constant}</mu2>
+            <material >Gazebo/Black </material >
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:friction_macro wheelnum="0" constant="100000.0"/>
+    <xacro:friction_macro wheelnum="1" constant="100000.0"/>
+    <xacro:friction_macro wheelnum="2" constant="100000.0"/>
+    <xacro:friction_macro wheelnum="3" constant="100000.0"/>
+    <xacro:friction_macro wheelnum="4" constant="100000.0"/>
+    
+
+    <gazebo reference="base_link"> 
+        <material >Gazebo/Orange </material >
+    </gazebo>
+
+    <gazebo reference="mast"> 
+        <material >Gazebo/Orange </material >
+    </gazebo>
+
+    <gazebo reference="left_big_wheel"> 
+        <material >Gazebo/Black </material >
+    </gazebo>
+
+    <gazebo reference="right_big_wheel"> 
+        <material >Gazebo/Black </material >
+    </gazebo>
+
+
+
+ 
+
+
+</robot>
