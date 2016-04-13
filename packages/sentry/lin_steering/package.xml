@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>lin_steering</name>
+  <name>sentry_lin_steering</name>
   <version>0.0.0</version>
   <description>The lin_steering package</description>
   

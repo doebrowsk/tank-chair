@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mobot_gazebo_state</name>
+  <name>sentry_mobot_gazebo_state</name>
   <version>0.0.0</version>
   <description>The mobot_gazebo_state package</description>
   

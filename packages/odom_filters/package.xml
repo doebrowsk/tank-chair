@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>tank_chair</name>
+  <name>odom_filters</name>
   <version>0.0.0</version>
-  <description>The tank-chair package</description>
+  <description>The filters package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/tank-chair</url> -->
+  <!-- <url type="website">http://wiki.ros.org/filters</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -40,16 +40,13 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-    <run_depend>crio_code</run_depend>
-    <run_depend>gps-msgs</run_depend>
-    <run_depend>novatel</run_depend>
-    <run_depend>razor_imu_9dof</run_depend>
-    <run_depend>sentry</run_depend>
-    <run_depend>wobbler</run_depend>
+  <build_depend>robot_localization</build_depend>
+  <run_depend>robot_localization</run_depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-    <metapackage/>
+
   </export>
 </package>

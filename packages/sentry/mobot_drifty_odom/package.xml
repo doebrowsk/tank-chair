@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mobot_drifty_odom</name>
+  <name>sentry_mobot_drifty_odom</name>
   <version>0.0.0</version>
   <description>The mobot_drifty_odom package</description>
   
