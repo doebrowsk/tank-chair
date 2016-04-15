@@ -29,11 +29,6 @@ catkin_simple()
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
-cs_add_executable(motion_commander src/motion_commander.cpp)
-
-cs_add_executable(sentry_action_server_w_fdbk src/sentry_action_server_w_fdbk.cpp)
-cs_add_executable(sentry_client src/sentry_client.cpp)
-cs_add_executable(sentry_lidar_alarm src/sentry_lidar_alarm.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package

@@ -15,10 +15,10 @@
 #include <vector>
 #include <queue>
 
-const double default_accel_max = 0.5; //1m/sec^2
-const double default_alpha_max = 0.2; //1 rad/sec^2
-const double default_speed_max = 1.0; //1 m/sec
-const double default_omega_max = 1.0; //1 rad/sec
+const double default_accel_max = 0.5; //m/sec^2
+const double default_alpha_max = 1.0; //rad/sec^2
+const double default_speed_max = 0.3; //m/sec
+const double default_omega_max = 1.5; //rad/sec
 const double default_path_move_tol = 0.01; // if path points are within 1cm, fuggidaboutit   
 const double default_dt=0.02;
 
@@ -96,8 +96,7 @@ public:
             geometry_msgs::PoseStamped end_pose,
             std::vector<nav_msgs::Odometry> &vec_of_states);
     void build_braking_traj(geometry_msgs::PoseStamped start_pose,
-            std::vector<nav_msgs::Odometry> &vec_of_states,
-			nav_msgs::Odometry current_vel_states);
+            std::vector<nav_msgs::Odometry> &vec_of_states);
 
 };
 

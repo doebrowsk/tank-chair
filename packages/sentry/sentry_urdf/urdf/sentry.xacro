@@ -8,10 +8,8 @@
     <xacro:property name="bodyheight" value="0.5" />
     <xacro:property name="bodyclearance" value="0.4" />  <!--clearance from bottom of box to ground--> 
 
-    <!-- placement of main body relative to base link frame -->
-    <xacro:property name="bodyOX" value="${-half_bodylen}" />  
-    <xacro:property name="bodyOY" value="0" />   
-    <xacro:property name="bodyOZ" value="0.45" />
+    <!-- how far the center of the robot should be above the ground -->
+    <xacro:property name="zDisp" value="0.6" />  
     
     <xacro:property name="mastlen" value="${bodywidth/10}" />
     <xacro:property name="mastwidth" value="${bodywidth}" />
@@ -72,13 +70,7 @@
             <axis xyz="0 0 1"/>
             <parent link="base_link"/>
             <child link="${prefix}_wheel"/>
-            
-            <!--
-            <origin xyz="0 ${left*track/2} ${tirerad}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
-            -->
-
-            <origin xyz="${displacement} ${left*track/2} ${-bodyheight/2}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
-
+            <origin xyz="${displacement} ${left*track/2} ${-bodyheight/2 + zDisp}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
             <limit effort="100" velocity="15" />
             <joint_properties damping="0.0" friction="0.0" />
         </joint>
@@ -108,7 +100,7 @@
             <axis xyz="0 0 1"/>
             <parent link="base_link"/>
             <child link="${prefix}_big_wheel"/>
-            <origin xyz="${displacement} ${left*track/2} ${bigtirerad}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
+            <origin xyz="${displacement} ${left*track/2} ${bigtirerad + zDisp}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
             <limit effort="100" velocity="15" />
             <joint_properties damping="0.0" friction="0.0" />
         </joint>
@@ -127,7 +119,7 @@
         </collision>
         <inertial>
             <!--assign almost all the mass to the main body box; set m= 100kg; treat I as approx m*r^2 -->
-            <mass value="2" />
+            <mass value="100" />
             <inertia ixx="10" ixy="0" ixz="0"
               iyy="10" iyz="0"
               izz="10" />
@@ -137,7 +129,7 @@
     <joint name="masttobase" type="fixed">
         <parent link="base_link"/>
         <child link="mast"/>
-        <origin xyz="${bodylen/4} 0 ${mastheight/2 + bodyheight/2}" rpy="0 0 0"/>
+        <origin xyz="${bodylen/4} 0 ${mastheight/2 + bodyheight/2 + zDisp}" rpy="0 0 0"/>
     </joint>
 
     <link name="base_link">
@@ -145,20 +137,13 @@
             <geometry>
                 <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
             </geometry>
-
-            <!--
-            <origin xyz="${bodyOX} ${bodyOY} ${bodyOZ}" rpy="0 0 0"/>
-            -->
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${zDisp}" rpy="0 0 0"/>
         </visual>
         <collision>
             <geometry>
                 <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
             </geometry>
-            <!--
-            <origin xyz="${bodyOX} ${bodyOY} ${bodyOZ}" rpy="0 0 0"/>
-            -->
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${zDisp}" rpy="0 0 0"/>
         </collision>
         <inertial>
             <!--assign almost all the mass to the main body box; set m= 100kg; treat I as approx m*r^2 -->
@@ -172,7 +157,6 @@
     <!-- add a simulated lidar, including visual, collision and inertial properties, and physics simulation-->
   <link name="lidar_link">
       <collision>
-          <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
               <!-- coarse LIDAR model; a simple box -->
               <box size="${lidar_cube_size} ${lidar_cube_size} ${lidar_cube_size}"/>
@@ -180,7 +164,6 @@
       </collision>
 
       <visual>
-          <origin xyz="0 0 0" rpy="0 0 0" />
           <geometry>
               <box size="${lidar_cube_size} ${lidar_cube_size} ${lidar_cube_size}" />
           </geometry>
@@ -191,7 +174,6 @@
 
       <inertial>
           <mass value="4.0" />
-          <origin xyz="0 0 0" rpy="0 0 0"/>
           <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
       </inertial>
   </link>
@@ -199,7 +181,7 @@
 
   <joint name="lidar_joint" type="fixed">
       <axis xyz="0 1 0" />
-      <origin xyz="${bodylen/2 + lidar_cube_size/2} 0 ${lidar_cube_size/2 - bodyheight/2}" rpy="0 0 0"/>
+      <origin xyz="${bodylen/2 + lidar_cube_size/2} 0 ${lidar_cube_size/2 - bodyheight/2 + zDisp}" rpy="0 0 0"/>
       <parent link="base_link"/>
       <child link="lidar_link"/>
   </joint>
@@ -208,7 +190,7 @@
   <gazebo reference="lidar_link">
     <sensor type="gpu_ray" name="sick_lidar_sensor">
       <pose>0 0 0 0 0 0</pose>
-      <visualize>false</visualize>
+      <visualize>true</visualize>
       <update_rate>40</update_rate>
       <ray>
         <scan>
@@ -237,20 +219,6 @@
     </sensor>
   </gazebo>  
 
-
-
-    
-
-
-
-
-
-
-
-
-
- 
-
     <!-- front wheels -->
     <xacro:wheel prefix="left4" left="1" displacement="${(bodylen/2)}"/>
     <xacro:wheel prefix="right4" left="-1" displacement="${(bodylen/2)}"/>
@@ -270,29 +238,9 @@
     <!-- big wheels -->
     <xacro:big_wheel prefix="left" left="1" displacement="${-(bodylen/2 - 1.25*bigtirerad)}"/>
     <xacro:big_wheel prefix="right" left="-1" displacement="${-(bodylen/2 - 1.25*bigtirerad)}"/>
-    
-<!-- 
-    <xacro:macro name="wheel_controller_plugin" params="wheelnum">
-        <plugin name="${wheelnum}_wheel_controller" filename="libgazebo_ros_diff_drive.so">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>100</updateRate>
-            <leftJoint>right${wheelnum}_wheel_joint</leftJoint>
-            <rightJoint>left${wheelnum}_wheel_joint</rightJoint>
-            <wheelSeparation>${track}</wheelSeparation>
-            <wheelDiameter>${tirediam}</wheelDiameter>
-            <torque>200</torque>
-            <commandTopic>cmd_vel</commandTopic>
-            <odometryTopic>odom</odometryTopic>
-            <odometryFrame>odom</odometryFrame>
-            <robotBaseFrame>base_link</robotBaseFrame>
-            <publishWheelTF>true</publishWheelTF>
-            <publishWheelJointState>true</publishWheelJointState>
-        </plugin>
-    </xacro:macro>
- -->
 
     <xacro:macro name="wheel_controller_plugin" params="wheelset1 wheelset2">
-      <plugin name="${wheelset1}_${wheelset2}_skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+      <plugin name="${wheelset1}_${wheelset2}_skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">        
         <updateRate>100.0</updateRate>
         <robotNamespace>/</robotNamespace>
         <leftFrontJoint>left${wheelset1}_wheel_joint</leftFrontJoint>
@@ -304,46 +252,21 @@
         <robotBaseFrame>base_link</robotBaseFrame>
         <torque>200</torque>
         <topicName>cmd_vel</topicName>
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <broadcastTF>1</broadcastTF>
+        <publishWheelTF>true</publishWheelTF>
+        <publishWheelJointState>true</publishWheelJointState>
       </plugin>
     </xacro:macro>
 
     <gazebo>
-
         <!-- controls for drive wheels -->
         <xacro:wheel_controller_plugin wheelset1="4" wheelset2="0"/>
         <xacro:wheel_controller_plugin wheelset1="3" wheelset2="1"/>
         <xacro:wheel_controller_plugin wheelset1="2" wheelset2="2"/>
-
-
-        <!-- 
-        <xacro:wheel_controller_plugin wheelnum="0" />
-        <xacro:wheel_controller_plugin wheelnum="1" />
-        <xacro:wheel_controller_plugin wheelnum="2" />
-        <xacro:wheel_controller_plugin wheelnum="3" />
-        <xacro:wheel_controller_plugin wheelnum="4" />
-         -->
-<!-- 
-        <plugin name="big_wheel_controller" filename="libgazebo_ros_diff_drive.so">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>100</updateRate>
-            <leftJoint>left_big_wheel_joint</leftJoint>
-            <rightJoint>right_big_wheel_joint</rightJoint>
-            <wheelSeparation>${track}</wheelSeparation>
-            <wheelDiameter>${bigtirediam}</wheelDiameter>
-            <torque>200</torque>
-            <commandTopic>cmd_vel</commandTopic>
-            <odometryTopic>odom</odometryTopic>
-            <odometryFrame>odom</odometryFrame>
-            <robotBaseFrame>base_link</robotBaseFrame>
-            <publishWheelTF>true</publishWheelTF>
-            <publishWheelJointState>true</publishWheelJointState>
-        </plugin>
- -->
-
-
     </gazebo>
-
-
 
     <xacro:macro name="friction_macro" params="wheelnum constant">
         <gazebo reference="left${wheelnum}_wheel"> 
@@ -380,10 +303,5 @@
     <gazebo reference="right_big_wheel"> 
         <material >Gazebo/Black </material >
     </gazebo>
-
-
-
- 
-
 
 </robot>
