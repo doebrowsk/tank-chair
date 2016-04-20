@@ -404,9 +404,60 @@ void TrajBuilder::build_triangular_spin_traj(geometry_msgs::PoseStamped start_po
 //this function would be useful for planning a need for sudden braking
 //compute trajectory corresponding to applying max prudent decel to halt
 void TrajBuilder::build_braking_traj(geometry_msgs::PoseStamped start_pose,
-        std::vector<nav_msgs::Odometry> &vec_of_states) {
-    //FINISH ME!
+        std::vector<nav_msgs::Odometry> &vec_of_states,nav_msgs::Odometry current_vel_states) {
+    ROS_INFO("We're building a braking trajectory now...");
+    nav_msgs::Odometry des_state;
+    des_state.header = start_pose.header; //really, want to copy the frame_id
+    des_state.pose.pose = start_pose.pose; //start from here
 
+    des_state.twist.twist = current_vel_states.twist.twist;
+    vec_of_states.clear();
+    vec_of_states.push_back(des_state);
+
+    double x_des = start_pose.pose.position.x; //start from here
+    double y_des = start_pose.pose.position.y;
+
+    double psi_des = convertPlanarQuat2Psi(start_pose.pose.orientation);
+    double speed_x = des_state.twist.twist.linear.x;
+    double spin_z = des_state.twist.twist.angular.z;
+
+    double stop_time =  speed_x/accel_max_;
+
+    double stop_dist = speed_x*stop_time - 0.5*accel_max_*stop_time*stop_time;
+    double dx = cos(psi_des)*stop_dist;
+    double dy = sin(psi_des)*stop_dist;
+
+    geometry_msgs::PoseStamped end_pose;
+    end_pose.pose.position.x = x_des + dx;
+    end_pose.pose.position.y = y_des + dy;
+
+    double speed = speed_x;
+    double spin =spin_z;
+
+    while(speed >0){
+        speed -= accel_max_*dt_; //Euler one-step integration
+        des_state.twist.twist.linear.x = speed;
+        x_des += speed * dt_ * cos(psi_des); //Euler one-step integration
+        y_des += speed * dt_ * sin(psi_des); //Euler one-step integration
+        des_state.pose.pose.position.x = x_des;
+        des_state.pose.pose.position.y = y_des;
+        vec_of_states.push_back(des_state);
+    }
+
+    while(spin >0){
+        spin -= alpha_max_*dt_; //Euler one-step integration
+        des_state.twist.twist.linear.z = spin;
+        psi_des += spin*dt_; //Euler one-step integration
+        des_state.pose.pose.orientation = convertPlanarPsi2Quaternion(psi_des);
+        vec_of_states.push_back(des_state);
+    }
+
+    //make sure the last state is precisely where requested, and at rest:
+    des_state.pose.pose = end_pose.pose;
+    //but final orientation will follow from point-and-go direction
+    des_state.pose.pose.orientation = convertPlanarPsi2Quaternion(psi_des);
+    des_state.twist.twist = halt_twist_; // insist on starting from rest
+    vec_of_states.push_back(des_state);
 }
 
 //main fnc of this library: constructs a spin-in-place reorientation to

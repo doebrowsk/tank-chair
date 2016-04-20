@@ -44,28 +44,21 @@
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model sentry" />
 
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find sentry_urdf)/rviz_config/sentry.rviz"/>
+
 <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-<node name="pub_des_state_startup" pkg="amcl_control" type="pub_des_state_startup" />
+<node name="lidar" pkg="mapping_and_control" type="lidar" />
 
-<!--
-don't need this anymore since we use gmapping to create the map on the fly
-<node name="map_server" pkg="map_server" type="map_server" args="$(find amcl_control)/starting_pen_map.yaml" />
--->
+<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan"/>
 
-<node name="amcl" pkg="amcl" type="amcl">
-    <remap from="scan" to="scan"/>  
-  </node>
+<node name="pub_des_state_startup" pkg="mapping_and_control" type="pub_des_state_startup" />
 
 <node name="odom_tf" pkg="odom_tf" type="odom_tf"/>
 
-<node name="lin_steering" pkg="amcl_control" type="lin_steering" />
-
-<node pkg="rviz" type="rviz" name="rviz" args="-d $(find sentry_urdf)/rviz_config/sentry.rviz"/>
- 
-<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan"/>
- 
-rosrun gmapping slam_gmapping scan:=/scan
-
+<node name="lin_steering" pkg="mapping_and_control" type="lin_steering" />
+  
+<node name="path_client" pkg="mapping_and_control" type="path_client" />
 
 </launch>
