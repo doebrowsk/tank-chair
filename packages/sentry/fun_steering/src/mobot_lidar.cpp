@@ -9,7 +9,7 @@
 
 #include <nav_msgs/Odometry.h>
 
-
+//wall following is need for both A-Star and the bug algorithm, so we
 //want the robot to follow the wall closer than the CORRECTION_THRESHOLD_DISTANCE
 
 const double MIN_SAFE_DISTANCE = 2.0; // set alarm if anything is too close
@@ -29,7 +29,7 @@ bool laser_alarm_=false;
 double last_known_psi_ = 0.0;
 double danger_turn_increment_ = 0.5*M_PI/180;
 double standard_turn_increment_ = 0.2*M_PI/180;
-bool found_wall = false; //needed to determine if we've found a wall yet
+bool found_wall = false; //needed to determine if we've found a wall yet for the bug algorithm
 
 
 ros::Publisher desired_state_publisher_;

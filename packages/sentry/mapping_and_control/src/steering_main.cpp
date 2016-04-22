@@ -172,67 +172,15 @@ int main(int argc, char **argv) {
 	path_srv.request.path.poses.push_back(pose_stamped);
 
 
-
-
-
-
+	////TO add a path point and send it, do:
 	//	//create some path points... we'll hard-code it for now
 	//	pose.position.x = -1.0;
 	//	pose.position.y = -1.0;
 	//	pose_stamped.pose = pose;
 	//	path_srv.request.path.poses.push_back(pose_stamped);
 	//
-	//	pose.position.x = 1.0;
-	//	pose.position.y = -1.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = 0.0;
-	//	pose.position.y = 8.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = -14.0;
-	//	pose.position.y = 8.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = -14.0;
-	//	pose.position.y = 12.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = 9.0;
-	//	pose.position.y = 12.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = 9.0;
-	//	pose.position.y = -8.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = -9.0;
-	//	pose.position.y = -8.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = -9.0;
-	//	pose.position.y = 8.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = 0.0;
-	//	pose.position.y = 8.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
-	//	pose.position.x = 0.0;
-	//	pose.position.y = 0.0;
-	//	pose_stamped.pose = pose;
-	//	path_srv.request.path.poses.push_back(pose_stamped);
-	//
 	//	append_client.call(path_srv);
+
 
 	ros::Subscriber point_click_subscriber = n.subscribe("clicked_point", 1, pointClickCallback);
 	ros::Subscriber motion_mode_subscriber = n.subscribe("motion_mode", 1, motionModeCallback);
