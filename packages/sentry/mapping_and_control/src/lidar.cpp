@@ -12,7 +12,7 @@
 
 //want the robot to follow the wall closer than the CORRECTION_THRESHOLD_DISTANCE
 
-const double MIN_SAFE_DISTANCE_FRONT = 1.5; // set alarm if anything is too close
+const double MIN_SAFE_DISTANCE_FRONT = 1.0; // set alarm if anything is too close
 const double CORRECTION_THRESHOLD_DISTANCE = 2.5;
 const double MAX_WALL_FOLLOW_DISTANCE = 4.0;
 
@@ -74,6 +74,9 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 	double smallest_ping_dist = HUGE_VAL;
 	double smallest_ping = -1;
 
+	TODO lidar alarm does not work after manual estop via point click 
+
+
 	lidar_alarm_ = false;
 	for (int i = 0; i <= M_PI/angle_increment_ + 1; i++) {
 
@@ -88,8 +91,8 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 
 		//use cosine so that obstacles close to the side of the robot are less of a concern than those
 		//directly in front of the robot
-		//added 0.01 so that the min safe distance never goes all the way to 0
-		if (ping_dist_ < MIN_SAFE_DISTANCE_FRONT * cos(angle_increment_ * i - M_PI/2) + 0.01) {
+		//added a bit more so that the min safe distance never goes all the way to 0
+		if (ping_dist_ < MIN_SAFE_DISTANCE_FRONT * cos(angle_increment_ * i - M_PI/2) + 0.5) {
 			lidar_alarm_ = true;
 
 			// //start turning away from obstacle
