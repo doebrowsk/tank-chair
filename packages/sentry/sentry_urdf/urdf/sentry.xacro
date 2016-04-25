@@ -260,28 +260,6 @@
         <xacro:wheel_controller_plugin wheelset1="2" wheelset2="2"/>
     </gazebo>
 
-<!--
-    <xacro:macro name="friction_macro" params="wheelnum constant">
-        <gazebo reference="left${wheelnum}_wheel"> 
-            <mu1>${constant}</mu1>
-            <mu2>${constant}</mu2>
-            <material >Gazebo/Black </material >
-        </gazebo>
-        <gazebo reference="right${wheelnum}_wheel"> 
-            <mu1>${constant}</mu1>
-            <mu2>${constant}</mu2>
-            <material >Gazebo/Black </material >
-        </gazebo>
-    </xacro:macro>
-
-
-    <xacro:friction_macro wheelnum="0" constant="100000.0"/>
-    <xacro:friction_macro wheelnum="1" constant="100000.0"/>
-    <xacro:friction_macro wheelnum="2" constant="100000.0"/>
-    <xacro:friction_macro wheelnum="3" constant="100000.0"/>
-    <xacro:friction_macro wheelnum="4" constant="100000.0"/>
-  -->
-
     <xacro:macro name="friction_macro" params="wheelnum mu1 mu2">
         <gazebo reference="left${wheelnum}_wheel"> 
             <mu1>${mu1}</mu1>
