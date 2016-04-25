@@ -20,6 +20,10 @@ float LOOP_RATE = 50.0;
 float MAX_LIN_ACEL = 1.0;
 float MAX_ANG_ACEL = 1.0;
 
+float DRIVING_DIRECTION = -1.0;
+
+
+
 geometry_msgs::Twist g_last_sent_cmd;
 geometry_msgs::Twist g_last_received_cmd;
 
@@ -75,13 +79,13 @@ void twistCallback(const geometry_msgs::Twist& message_holder)
 
 }
 void feedback1(const roboteq_msgs::Feedback& message_holder){
-	g_pos1 = message_holder.measured_position*RADS_PER_TICK;
-	g_vel1 = message_holder.measured_velocity*RADS_PER_TICK;
+	g_pos1 = message_holder.measured_position*RADS_PER_TICK*DRIVING_DIRECTION;
+	g_vel1 = message_holder.measured_velocity*RADS_PER_TICK*DRIVING_DIRECTION;
 
 }
 void feedback2(const roboteq_msgs::Feedback& message_holder){
-	g_pos2 = message_holder.measured_position*RADS_PER_TICK;
-	g_vel2 = message_holder.measured_velocity*RADS_PER_TICK;
+	g_pos2 = message_holder.measured_position*RADS_PER_TICK*DRIVING_DIRECTION;
+	g_vel2 = message_holder.measured_velocity*RADS_PER_TICK*DRIVING_DIRECTION;
 }
 int main(int argc, char **argv) 
 { 
@@ -143,8 +147,8 @@ int main(int argc, char **argv)
 		v1 = cmd_to_motor.linear.x;
 		v2 = cmd_to_motor.linear.x;
 
-		v1*=MAX_COMMAND/MAX_SPEED;
-		v2*=MAX_COMMAND/MAX_SPEED;
+		v1*=MAX_COMMAND/MAX_SPEED*DRIVING_DIRECTION;
+		v2*=MAX_COMMAND/MAX_SPEED*DRIVING_DIRECTION;
 
 		v2 += (cmd_to_motor.angular.z)*MAX_COMMAND/MAX_SPEED*BASE_RADIUS;
 		v1 -= (cmd_to_motor.angular.z)*MAX_COMMAND/MAX_SPEED*BASE_RADIUS;
