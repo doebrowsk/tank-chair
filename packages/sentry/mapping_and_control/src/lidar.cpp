@@ -40,8 +40,6 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 		ROS_INFO("%f",range_max_);
 	}
 
-	//TODO lidar alarm does not work after manual estop via point click 
-
 	lidar_alarm_ = false;
 	for (int i = 0; i <= M_PI/angle_increment_ + 1; i++) {
 

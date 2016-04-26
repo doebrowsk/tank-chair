@@ -53,6 +53,11 @@ void lidarAlarmCallback(const std_msgs::Bool& lidarAlarmMsg) {
 	switch (motionMode) {
 	case E_STOPPED:
 	{
+		if (lidar_alarm_sent_recently && !lidarAlarmMsg.data) {
+			//if we're estopped and not in danger, reset the lidar alarm
+			lidar_alarm_sent_recently = false;
+			ROS_INFO("LIDAR ALARM RESET (safely stopped)");
+		}
 		break;
 	}
 	case HALTING:
@@ -63,12 +68,16 @@ void lidarAlarmCallback(const std_msgs::Bool& lidarAlarmMsg) {
 	{
 		//only set off lidar alarm if the alarm is true,
 		//we are on the way to a subgoal,
-		//and it hasn't been set off in the last 5 seconds
+		//and it hasn't been set off recently
 		//(to allow it to turn away from an obstacle)
 		if (lidarAlarmMsg.data && !lidar_alarm_sent_recently) {
 			lidar_alarm_client.call(request);
+			ROS_WARN("LIDAR ALARM DISABLED");
 			lidar_alarm_sent_recently = true;
 			flush_client.call(request);
+		}
+		else if(lidarAlarmMsg.data && lidar_alarm_sent_recently) {
+			ROS_WARN("LIDAR ALARM IGNORED");
 		}
 		break;
 	}
@@ -118,6 +127,7 @@ void pointClickCallback(const geometry_msgs::PointStamped& pointStamped) {
 	case DONE_W_SUBGOAL:
 	{
 		ROS_INFO("State: DONE_W_SUBGOAL");
+		ROS_INFO("LIDAR ALARM RESET (done with subgoal)");
 		lidar_alarm_sent_recently = false; //reset the lidar alarm, allow it to go off again
 		go = true;
 		break;
