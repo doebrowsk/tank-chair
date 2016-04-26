@@ -20,7 +20,7 @@ float LOOP_RATE = 50.0;
 float MAX_LIN_ACEL = 1.0;
 float MAX_ANG_ACEL = 1.0;
 
-float DRIVING_DIRECTION = -1.0;
+int DRIVING_DIRECTION = -1;
 
 
 
@@ -79,13 +79,19 @@ void twistCallback(const geometry_msgs::Twist& message_holder)
 
 }
 void feedback1(const roboteq_msgs::Feedback& message_holder){
-	g_pos1 = message_holder.measured_position*RADS_PER_TICK*DRIVING_DIRECTION;
-	g_vel1 = message_holder.measured_velocity*RADS_PER_TICK*DRIVING_DIRECTION;
+
+	if(DRIVING_DIRECTION==-1){
+		g_pos2 = message_holder.measured_position*RADS_PER_TICK*DRIVING_DIRECTION;
+		g_vel2 = message_holder.measured_velocity*RADS_PER_TICK*DRIVING_DIRECTION;
+	}
 
 }
 void feedback2(const roboteq_msgs::Feedback& message_holder){
-	g_pos2 = message_holder.measured_position*RADS_PER_TICK*DRIVING_DIRECTION;
-	g_vel2 = message_holder.measured_velocity*RADS_PER_TICK*DRIVING_DIRECTION;
+	
+	if(DRIVING_DIRECTION==-1){
+		g_pos1 = message_holder.measured_position*RADS_PER_TICK*DRIVING_DIRECTION;
+		g_vel1 = message_holder.measured_velocity*RADS_PER_TICK*DRIVING_DIRECTION;
+	}
 }
 int main(int argc, char **argv) 
 { 
