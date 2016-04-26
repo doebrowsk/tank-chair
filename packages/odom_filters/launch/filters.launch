@@ -1,0 +1,84 @@
+<launch>
+    <!-- robot_localization package info can be found at http://wiki.ros.org/robot_localization -->
+
+    <!-- Continuous sensor (Odom + IMU) filter for navigation -->
+    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_continuous" clear_params="true" output="screen">
+        <param name="frequency" value="10"/>
+        <param name="sensor_timeout"  value="0.1"/>
+        <param name="two_d_mode" value="true"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="base_link_frame" value="base_link"/>
+        <param name="world_frame" value="odom"/>
+        <param name="odom0" value="Odom"/> <!-- odom topic subscription -->
+        <param name="imu0" value="Imu"/> <!-- IMU topic subscription -->
+        <!-- Assume that odometry is caculating X/Y position and Yaw by integrating measured velocities -->
+        <!-- Therefore these are duplicate measurements so we'll ignore the position and just use velocities -->
+        <!-- No need to fuse Z velocity or roll/pitch because two_d_mode is set to true -->
+        <!-- More info at http://wiki.ros.org/robot_localization/Tutorials/Sensor%20Configuration -->
+        <rosparam param="odom0_config">
+            [false, false,  false,  <!-- x y z position -->
+            false,  false,  false,  <!-- roll pitch yaw -->
+            true,   true,   false,  <!-- x y z velocity -->
+            false,  false,  true,   <!-- roll pitch yaw velocity -->
+            false,  false,  false]  <!-- x y z acceleration -->
+        </rosparam>
+        <!-- Fuse yaw, yaw velocity, and x acceleration -->
+        <rosparam param="imu0_config">
+            [false, false, false,
+            false,  false, true,
+            false,  false, false,
+            false,  false, true,
+            true,   false, false]
+        </rosparam>
+        <param name="odom0_differential" value="false"/>
+        <param name="imu0_differential" value="false"/>
+        <param name="print_diagnostics" value="true"/>
+    </node>
+
+    <!-- navsat_transform node to convert GPS messages into world frame odometry -->
+    <!-- This publishes to odometry/gps with an Odom message representing the received GPS messages -->
+    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" respawn="true">
+        <param name="magnetic_declination_radians" value="0.146316769"/>
+        <param name="yaw_offset" value="0"/>
+        <!-- Technically not necessary since filter isn't fusing z position, but we'll do this anyways just to be safe -->
+        <param name="zero_altitude" value="true"/>
+        <remap from="imu/data" to="Imu" />
+        <remap from="gps/fix" to="gps_fix" />
+        <!--remap from="odometry/filtered" to="/your/robot_localization/output/topic" /-->
+    </node>
+
+    <!-- Filter combining continuous sensor filter with GPS (discrete sensor) data -->
+    <!-- The output of this filter can be used to calculate transforms between the map and odom frame -->
+    <!-- Info on integrating GPS can be found at http://wiki.ros.org/robot_localization/Tutorials/GPS%20Integration -->
+    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_discrete" clear_params="true" output="screen">
+        <remap from="odometry/filtered" to="odometry/filtered_w_gps"/>
+        <param name="frequency" value="10"/>
+        <param name="sensor_timeout"  value="0.1"/>
+        <param name="two_d_mode" value="true"/>
+        <param name="map_frame" value="map"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="base_link_frame" value="base_link"/>
+        <param name="world_frame" value="map"/>
+        <param name="odom0" value="odometry/filtered"/> <!-- filtered odom topic subscription -->
+        <param name="odom1" value="odometry/gps"/> <!-- gps odom from navsat_transform topic subscription -->
+        <!-- Fuse x and y position and yaw from previously filtered odometry -->
+        <rosparam param="odom0_config">
+            [true,  true,   false,  <!-- x y z position -->
+            false,  false,  true,  <!-- roll pitch yaw -->
+            false,  false,  false,  <!-- x y z velocity -->
+            false,  false,  false,   <!-- roll pitch yaw velocity -->
+            false,  false,  false]  <!-- x y z acceleration -->
+        </rosparam>
+        <!-- Fuse x and y position from GPS -->
+        <rosparam param="odom1_config">
+            [true,  true, false,
+            false,  false, false,
+            false,  false, false,
+            false,  false, false,
+            false,   false, false]
+        </rosparam>
+        <param name="odom0_differential" value="false"/> <!-- Could be true if we have issues with covariances -->
+        <param name="odom1_differential" value="false"/> <!-- Must be false because this comes from GPS data -->
+        <param name="print_diagnostics" value="true"/>
+    </node>
+</launch>

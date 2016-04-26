@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>traj_builder</name>
+  <name>sentry_traj_builder</name>
   <version>0.0.0</version>
   <description>The traj_builder package</description>
   

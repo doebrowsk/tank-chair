@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(traj_builder)
+project(sentry_traj_builder)
 
 find_package(catkin_simple REQUIRED)
 
@@ -25,7 +25,7 @@ catkin_simple()
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Libraries: uncomment the following and edit arguments to create a new library
-cs_add_library(traj_builder src/traj_builder.cpp)   
+cs_add_library(sentry_traj_builder src/traj_builder.cpp)
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
