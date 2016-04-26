@@ -33,7 +33,7 @@ cs_add_library(sentry_traj_builder src/traj_builder.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
-target_link_libraries(traj_builder)
+target_link_libraries(sentry_traj_builder)
 
 cs_install()
 cs_export()
