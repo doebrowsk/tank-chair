@@ -51,7 +51,7 @@
 
 <node name="lidar" pkg="mapping_and_control" type="lidar" />
 
-<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan"/>
+<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan _base_frame:=base_laser1_link"/>
 
 <node name="pub_des_state_startup" pkg="mapping_and_control" type="pub_des_state_startup" />
 
@@ -60,5 +60,6 @@
 <node name="lin_steering" pkg="mapping_and_control" type="lin_steering" />
   
 <node name="path_client" pkg="mapping_and_control" type="path_client" />
+
 
 </launch>

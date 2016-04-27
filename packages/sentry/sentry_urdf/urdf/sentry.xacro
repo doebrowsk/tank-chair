@@ -61,7 +61,7 @@
         </link>
         <joint name="${prefix}_wheel_joint" type="continuous">
             <axis xyz="0 0 1"/>
-            <parent link="base_link"/>
+            <parent link="base_laser1_link"/>
             <child link="${prefix}_wheel"/>
             <origin xyz="${displacement} ${left*track/2} ${-bodyheight/2 + zDisp}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
             <limit effort="100" velocity="15" />
@@ -91,7 +91,7 @@
         </link>
         <joint name="${prefix}_big_wheel_joint" type="continuous">
             <axis xyz="0 0 1"/>
-            <parent link="base_link"/>
+            <parent link="base_laser1_link"/>
             <child link="${prefix}_big_wheel"/>
             <origin xyz="${displacement} ${left*track/2} ${bigtirerad + zDisp}" rpy="0 ${M_PI/2} ${M_PI/2}"/>
             <limit effort="100" velocity="15" />
@@ -119,12 +119,12 @@
     </link>
 
     <joint name="masttobase" type="fixed">
-        <parent link="base_link"/>
+        <parent link="base_laser1_link"/>
         <child link="mast"/>
         <origin xyz="${bodylen/4} 0 ${mastheight/2 + bodyheight/2 + zDisp}" rpy="0 0 0"/>
     </joint>
 
-    <link name="base_link">
+    <link name="base_laser1_link">
         <visual>
             <geometry>
                 <box size="${bodylen} ${bodywidth} ${bodyheight}"/>
@@ -174,7 +174,7 @@
   <joint name="lidar_joint" type="fixed">
       <axis xyz="0 1 0" />
       <origin xyz="${bodylen/2 + lidar_cube_size/2} 0 ${lidar_cube_size/2 - bodyheight/2 + zDisp}" rpy="0 0 0"/>
-      <parent link="base_link"/>
+      <parent link="base_laser1_link"/>
       <child link="lidar_link"/>
   </joint>
 
@@ -241,7 +241,7 @@
         <rightRearJoint>right${wheelset2}_wheel_joint</rightRearJoint>
         <wheelSeparation>${track}</wheelSeparation>
         <wheelDiameter>${tirediam}</wheelDiameter>
-        <robotBaseFrame>base_link</robotBaseFrame>
+        <robotBaseFrame>base_laser1_link</robotBaseFrame>
         <torque>200</torque>
         <topicName>cmd_vel</topicName>
         <commandTopic>cmd_vel</commandTopic>
@@ -279,7 +279,7 @@
     <xacro:friction_macro wheelnum="3" mu1="200.0" mu2="100.0"/>
     <xacro:friction_macro wheelnum="4" mu1="200.0" mu2="100.0"/>  
 
-    <gazebo reference="base_link"> 
+    <gazebo reference="base_laser1_link"> 
         <material >Gazebo/Orange </material >
     </gazebo>
 

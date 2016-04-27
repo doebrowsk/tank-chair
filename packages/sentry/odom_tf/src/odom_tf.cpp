@@ -1,7 +1,7 @@
 //odom_tf.cpp:
 //wsn, March 2016
 //illustrative node to show use of tf listener to reconcile odom and map frames
-// w/rt base_link
+// w/rt base_laser1_link
 
 // this header incorporates all the necessary #include files and defines the class "OdomTf"
 #include "odom_tf.h"

@@ -47,8 +47,8 @@ public:
     tf::StampedTransform stfAmclBaseLinkWrtMap_;  
     tf::StampedTransform stfEstBaseWrtMap_;
     
-    geometry_msgs::PoseStamped base_link_wrt_odom_; //can extract this from 
-    geometry_msgs::PoseStamped base_link_wrt_map_; //this is what we care about; need to compute it
+    geometry_msgs::PoseStamped base_laser1_link_wrt_odom_; //can extract this from 
+    geometry_msgs::PoseStamped base_laser1_link_wrt_map_; //this is what we care about; need to compute it
                                                    // then publish it
 
     tf::StampedTransform tfLink2ToOdom_;  
@@ -72,9 +72,11 @@ private:
     ros::NodeHandle nh_; // we will need this, to pass between "main" and constructor
     // some objects to support subscriber, service, and publisher
     ros::Subscriber odom_subscriber_; //these will be set up within the class constructor, hiding these ugly details
+    ros::Subscriber drifty_odom_subscriber_; //these will be set up within the class constructor, hiding these ugly details
     ros::Subscriber amcl_subscriber_; // subscribe to amcl message containing estimated robot pose w/rt map frame
     void initializeSubscribers();
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
+    void driftyOdomCallback(const nav_msgs::Odometry& odom_rcvd);
     void amclCallback(const geometry_msgs::PoseWithCovarianceStamped& amcl_rcvd);
 
 
