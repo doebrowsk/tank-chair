@@ -26,6 +26,10 @@
   <arg unless="$(arg debug)" name="script_type" value="gzserver"/>
   <arg     if="$(arg debug)" name="script_type" value="debug"/>
 
+
+  <!-- Convert an xacro and put on parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find sentry_urdf)/urdf/sentry.xacro'" />
+
 <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
 <node name="lidar" pkg="mapping_and_control" type="lidar" />

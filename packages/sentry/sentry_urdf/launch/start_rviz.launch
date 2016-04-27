@@ -27,9 +27,6 @@
   <arg     if="$(arg debug)" name="script_type" value="debug"/>
 
 
-  <!-- Convert an xacro and put on parameter server -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find sentry_urdf)/urdf/sentry.xacro'" />
-
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sentry_urdf)/rviz_config/sentry.rviz"/>
 
 </launch>
