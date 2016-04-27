@@ -13,6 +13,16 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
 
     initializeSubscribers(); // package up the messy work of creating subscribers; do this overhead in constructor
     //initializePublishers();
+    odom_count_=0;
+    odom_phi_ = 1000.0; // put in impossible value for heading; test this value to make sure we have received a viable odom message
+    ROS_INFO("waiting for valid odom message...");
+    while (odom_phi_ > 500.0) {
+        ros::Duration(0.5).sleep(); // sleep for half a second
+        std::cout << ".";
+        ros::spinOnce();
+    }
+    ROS_INFO("constructor: got an odom message; ready to roll");
+    
 
     // wait to start receiving valid tf transforms between odom and link2:
     bool tferr = true;
@@ -70,15 +80,7 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     stfDriftyOdomWrtMap_.frame_id_ = "map"; // declare the respective frames
     stfDriftyOdomWrtMap_.child_frame_id_ = "drifty_odom"; 
 
-    odom_count_=0;
-    odom_phi_ = 1000.0; // put in impossible value for heading; test this value to make sure we have received a viable odom message
-    ROS_INFO("waiting for valid odom message...");
-    while (odom_phi_ > 500.0) {
-        ros::Duration(0.5).sleep(); // sleep for half a second
-        std::cout << ".";
-        ros::spinOnce();
-    }
-    ROS_INFO("constructor: got an odom message; ready to roll");
+    
 
 }
 
