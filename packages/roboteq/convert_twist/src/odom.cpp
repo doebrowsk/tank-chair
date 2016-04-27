@@ -101,7 +101,7 @@ void joint_state_CB(const sensor_msgs::JointState& joint_states) {
         g_drifty_odom.twist.twist.angular.z = dpsi / g_dt;
         g_drifty_odom.header.stamp = g_cur_time;
         g_drifty_odom_pub.publish(g_drifty_odom);
-        ROS_INFO("%f",g_odom_psi/3.14159);
+//        ROS_INFO("%f",g_odom_psi/3.14159);
     }
 }
 
