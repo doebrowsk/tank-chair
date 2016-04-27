@@ -1,0 +1,6 @@
+<launch>
+	<include file="$(find roboteq_driver)/launch/start_motors.launch" />
+	<include file="$(find launchers)/launch/start_lidar.launch" />
+	<include file="$(find novatel)/launch/novatel_for_psr.launch" />
+	<include file="$(find razor_imu_9dof)/launch/razor-pub.launch" />
+</launch>
