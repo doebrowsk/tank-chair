@@ -400,7 +400,7 @@ nav_msgs::Odometry DesStatePublisher::get_corrected_des_state(nav_msgs::Odometry
 
     geometry_msgs::PoseStamped correctedStatePose;
 
-    ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedStatePose.pose.position.x, uncorrectedStatePose.pose.position.y);
+    //("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedStatePose.pose.position.x, uncorrectedStatePose.pose.position.y);
 
     if (tfListener.canTransform("map","odom",uncorrectedState.header.stamp)) {
         tfListener.transformPose("map",uncorrectedStatePose,correctedStatePose);
@@ -409,7 +409,7 @@ nav_msgs::Odometry DesStatePublisher::get_corrected_des_state(nav_msgs::Odometry
         ROS_WARN("TEARS can't transform");
     }
 
-    ROS_WARN("AFTER: x,y %f, %f", correctedStatePose.pose.position.x, correctedStatePose.pose.position.y);
+    //ROS_WARN("AFTER: x,y %f, %f", correctedStatePose.pose.position.x, correctedStatePose.pose.position.y);
 
     nav_msgs::Odometry correctedState = uncorrectedState;
     correctedState.pose.pose = correctedStatePose.pose;
