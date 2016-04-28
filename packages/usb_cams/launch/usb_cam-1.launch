@@ -8,6 +8,10 @@
     <param name="pixel_format" value="yuyv" />
     <param name="camera_frame_id" value="usb_cam" />
     <param name="io_method" value="mmap"/>
+    
+    <!-- trying different framerates for publishing  -->
+    <param name="framerate" value="10" />
+    
   </node>
 
 
