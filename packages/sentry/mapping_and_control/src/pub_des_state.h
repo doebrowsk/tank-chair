@@ -44,7 +44,7 @@ const double path_move_tol = 0.02; // if path points are within 10cm, fuggidabou
 //the distance required for the robot to travel in order to add a new point to the return path
 const double return_path_point_spacing = 0.02; 
 //the delta angle required for the robot to turn in order to add a new point to the return path
-const double return_path_delta_phi = 0.1; 
+const double return_path_delta_phi = 0.01; 
 
 const int E_STOPPED = 0; //define some mode keywords
 const int DONE_W_SUBGOAL = 1;
