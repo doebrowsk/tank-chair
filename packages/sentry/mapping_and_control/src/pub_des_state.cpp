@@ -403,7 +403,6 @@ nav_msgs::Odometry DesStatePublisher::get_corrected_des_state(nav_msgs::Odometry
     ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedStatePose.pose.position.x, uncorrectedStatePose.pose.position.y);
 
     if (tfListener.canTransform("map","odom",uncorrectedState.header.stamp)) {
-        ROS_WARN("YAYYY can transform");
         tfListener.transformPose("map",uncorrectedStatePose,correctedStatePose);
     }
     else {
