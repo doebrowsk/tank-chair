@@ -40,7 +40,7 @@ const double alpha_max = 1.0; // rad/sec^2
 const double speed_max = 0.2; //1 m/sec
 const double omega_max = 0.5; //1 rad/sec
 
-const double path_move_tol = 0.01; // if path points are within 1cm, fuggidaboutit
+const double path_move_tol = 0.1; // if path points are within 10cm, fuggidaboutit 
 
 const int E_STOPPED = 0; //define some mode keywords
 const int DONE_W_SUBGOAL = 1;
