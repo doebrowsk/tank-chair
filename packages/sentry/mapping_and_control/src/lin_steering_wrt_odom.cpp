@@ -96,8 +96,8 @@ void SteeringController::initializeServices()
 void SteeringController::initializePublishers()
 {
 	ROS_INFO("Initializing Publishers: cmd_vel and cmd_vel_stamped");
-	cmd_publisher_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1, true); // talks to the robot!
-	cmd_publisher2_ = nh_.advertise<geometry_msgs::TwistStamped>("cmd_vel_stamped",1, true); //alt topic, includes time stamp
+	cmd_publisher_ = nh_.advertise<geometry_msgs::Twist>("rviz/cmd_vel", 1, true); // talks to the robot!
+	cmd_publisher2_ = nh_.advertise<geometry_msgs::TwistStamped>("rviz/cmd_vel_stamped",1, true); //alt topic, includes time stamp
 	//steering_errs_publisher_ =  nh_.advertise<std_msgs::Float32MultiArray>("steering_errs",1, true);
 }
 
