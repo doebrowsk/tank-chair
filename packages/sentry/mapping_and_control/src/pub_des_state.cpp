@@ -45,8 +45,6 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
     odom_subscriber_ = nh_.subscribe("/odom", 1, &DesStatePublisher::odomCallback, this); //subscribe to odom messages
     cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
     go_home_subscriber_ = nh_.subscribe("/go_home", 1, &DesStatePublisher::cmdModeCallback, this);
-
-
 }
 
 double DesStatePublisher::convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion) {
@@ -64,6 +62,8 @@ void DesStatePublisher::initializeServices() {
             &DesStatePublisher::clearEstopServiceCallback, this);
 	lidar_alarm_service_ = nh_.advertiseService("lidar_alarm_service",
             &DesStatePublisher::lidarAlarmServiceCallback, this);
+    pop_path_queue_ = nh_.advertiseService("pop_path_queue_service",
+            &DesStatePublisher::popPathQueueCB, this);
     flush_path_queue_ = nh_.advertiseService("flush_path_queue_service",
             &DesStatePublisher::flushPathQueueCB, this);
     append_path_ = nh_.advertiseService("append_path_queue_service",
@@ -156,6 +156,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
     poseToAdd.header = current_state_.header;
 
     if (return_path_stack.empty()) {
+        ROS_INFO("return_path_stack got its first point");
         return_path_stack.push(poseToAdd);
     }
     else {
