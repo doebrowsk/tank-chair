@@ -9,8 +9,8 @@
         <param name="odom_frame" value="odom"/>
         <param name="base_link_frame" value="base_link"/>
         <param name="world_frame" value="odom"/>
-        <param name="odom0" value="Odom"/> <!-- odom topic subscription -->
-        <param name="imu0" value="Imu"/> <!-- IMU topic subscription -->
+        <param name="odom0" value="odom"/> <!-- odom topic subscription -->
+        <param name="imu0" value="imu"/> <!-- IMU topic subscription -->
         <!-- Assume that odometry is caculating X/Y position and Yaw by integrating measured velocities -->
         <!-- Therefore these are duplicate measurements so we'll ignore the position and just use velocities -->
         <!-- No need to fuse Z velocity or roll/pitch because two_d_mode is set to true -->
@@ -32,7 +32,7 @@
         </rosparam>
         <param name="odom0_differential" value="false"/>
         <param name="imu0_differential" value="false"/>
-        <param name="print_diagnostics" value="true"/>
+        <!--param name="print_diagnostics" value="true"/-->
     </node>
 
     <!-- navsat_transform node to convert GPS messages into world frame odometry -->
@@ -42,9 +42,9 @@
         <param name="yaw_offset" value="0"/>
         <!-- Technically not necessary since filter isn't fusing z position, but we'll do this anyways just to be safe -->
         <param name="zero_altitude" value="true"/>
-        <remap from="imu/data" to="Imu" />
-        <remap from="gps/fix" to="gps_fix" />
-        <!--remap from="odometry/filtered" to="/your/robot_localization/output/topic" /-->
+        <remap from="imu/data" to="imu" />
+        <remap from="gps/fix" to="gps_fix_psr" />
+        <!--remap from="odometry/filtered" to="odometry/filtered_w_gps"/-->
     </node>
 
     <!-- Filter combining continuous sensor filter with GPS (discrete sensor) data -->
@@ -77,8 +77,10 @@
             false,  false, false,
             false,   false, false]
         </rosparam>
-        <param name="odom0_differential" value="false"/> <!-- Could be true if we have issues with covariances -->
+        <param name="odom0_differential" value="true"/> <!-- Could be true if we have issues with covariances -->
         <param name="odom1_differential" value="false"/> <!-- Must be false because this comes from GPS data -->
         <param name="print_diagnostics" value="true"/>
     </node>
+
+	<node pkg="tf" type="static_transform_publisher" name="base_to_imu" args="0.3 0 0.2 0 0 0 base_link base_imu_link 50"/>
 </launch>
