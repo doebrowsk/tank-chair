@@ -160,6 +160,8 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
         return_path_stack.push(poseToAdd);
     }
     else {
+        //only add a point if we've moved at least return_path_point_spacing meter
+        //and our heading is different by at least 
         geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();
 
         double currentX = current_state_.pose.pose.position.x;
@@ -168,7 +170,11 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
         double lastY = topPoseInStack.pose.position.y;
         double dist = sqrt(pow(lastX - currentX,2) + pow(lastY - currentY,2));  //thanks pythagoras, you da man 
 
-        if (dist >= return_path_point_spacing) {
+        double current_psi = trajBuilder_.convertPlanarQuat2Psi(current_state_.pose.pose.orientation);
+        double last_psi = trajBuilder_.convertPlanarQuat2Psi(topPoseInStack.pose.orientation);
+        double psiDiff = abs(current_psi - last_psi);
+
+        if (dist >= return_path_point_spacing && psiDiff >= return_path_delta_phi) {
             ROS_INFO("return_path_stack got a point");
             return_path_stack.push(poseToAdd);
         }
@@ -203,15 +209,6 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
     else {
         ROS_WARN("Robot not drunk enough to go home");
     }
-
-// const std_msgs::Bool& message_holder
-//     if (message_holder.data == true) {
-//     }
-//     else
-//     {
-
-//     }
-
 }
 
 
@@ -358,7 +355,7 @@ void DesStatePublisher::pub_next_state() {
             //it to compute a new trajectory and change motion mode
             if (!path_queue_.empty()) {
                 int n_path_pts = path_queue_.size();
-                ROS_INFO("%d points in path queue", n_path_pts);
+                ROS_WARN("%d points in path queue", n_path_pts);
                 start_pose_ = current_pose_;
                 end_pose_ = path_queue_.front();
                 trajBuilder_.build_point_and_go_traj(start_pose_, end_pose_, des_state_vec_);
