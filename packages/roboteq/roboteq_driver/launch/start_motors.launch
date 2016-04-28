@@ -1,7 +1,8 @@
 <launch>
   <arg name="port" default="/dev/ttyACM0" />
   <node name = "converter" pkg = "convert_twist" type = "convert_twist"/>
-	<node name = "odom" pkg = "convert_twist" type = "odom"/>
+  <node name = "odom" pkg = "convert_twist" type = "odom"/>
+  <node name = "cmd_vel_switch" pkg = "convert_twist" type = "cmd_vel_switch"/>
   
   <node pkg="roboteq_driver" type="driver_node" name="roboteq_driver" output="screen">
     <param name="port" value="$(arg port)" />
