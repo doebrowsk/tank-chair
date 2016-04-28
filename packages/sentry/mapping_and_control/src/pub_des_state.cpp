@@ -173,6 +173,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
         double current_psi = trajBuilder_.convertPlanarQuat2Psi(current_state_.pose.pose.orientation);
         double last_psi = trajBuilder_.convertPlanarQuat2Psi(topPoseInStack.pose.orientation);
         double psiDiff = abs(current_psi - last_psi);
+        ROS_INFO("(currentX, currentY, lastX, lastY,current_psi,last_psi = %f, %f, %f, %f, %f, %f)",currentX, currentY, lastX, lastY,current_psi,last_psi);
 
         ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
 
