@@ -43,6 +43,7 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
     lidar_alarm = false;
 
     odom_subscriber_ = nh_.subscribe("/odom", 1, &DesStatePublisher::odomCallback, this); //subscribe to odom messages
+    cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
 
 }
 
@@ -103,6 +104,12 @@ bool DesStatePublisher::flushPathQueueCB(std_srvs::TriggerRequest& request, std_
     return true;
 }
 
+bool DesStatePublisher::popPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response) {
+    ROS_WARN("removing element from path queue");
+    path_queue_.pop();
+    return true;
+}
+
 bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& request, mapping_and_control::pathResponse& response) {
 
     int npts = request.path.poses.size();
@@ -114,6 +121,8 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
 }
 
 void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) { 
+
+    current_state_ = odom_rcvd;
 
     geometry_msgs::Pose odom_pose_ = odom_rcvd.pose.pose;
     geometry_msgs::Quaternion odom_quat_ = odom_rcvd.pose.pose.orientation;
@@ -138,7 +147,70 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
     stfBaseLinkWrtOdom_.child_frame_id_ = "base_link";
 
     br_.sendTransform(stfBaseLinkWrtOdom_);
+
+    //look at the odom, if we've moved significantly, append a path point to our return path
+    geometry_msgs::PoseStamped poseToAdd;
+    poseToAdd.pose = current_state_.pose.pose;
+    poseToAdd.header = current_state_.header;
+
+    if (return_path_stack.empty()) {
+        return_path_stack.push(poseToAdd);
+    }
+    else {
+        geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();
+
+        double currentX = current_state_.pose.pose.position.x;
+        double currentY = current_state_.pose.pose.position.y;
+        double lastX = topPoseInStack.pose.position.x;
+        double lastY = topPoseInStack.pose.position.y;
+        double dist = sqrt(pow(lastX - currentX,2) + pow(lastY - currentY,2));  //thanks pythagoras, you da man 
+
+        if (dist >= return_path_point_spacing) {
+            ROS_INFO("return_path_stack got a point");
+            return_path_stack.push(poseToAdd);
+        }
+    }
 }
+
+void DesStatePublisher::cmdModeCallback(const std_msgs::Int32& message_holder) {
+
+    if (message_holder.data == 0) {
+        motion_mode_ = OFF;
+    }
+    else if (message_holder.data == 1 && motion_mode_ == OFF) {
+        motion_mode_ = DONE_W_SUBGOAL;
+    }
+    else {
+        ROS_WARN("Got unexpected motion_mode_ from cmd_mode topic");
+    }
+}
+
+void DesStatePublisher::goHomeRobotYoureDrunk() {
+    
+    if (motion_mode_ != OFF) {
+
+        ROS_WARN("Robot going home");
+
+        while (!return_path_stack.empty()) {
+            path_queue_.push(return_path_stack.top());
+            return_path_stack.pop();
+        }
+    }
+    else {
+        ROS_WARN("Robot not drunk enough to go home");
+    }
+
+// const std_msgs::Bool& message_holder
+//     if (message_holder.data == true) {
+//     }
+//     else
+//     {
+
+//     }
+
+}
+
+
 
 void DesStatePublisher::set_init_pose(double x, double y, double psi) {
     current_pose_ = trajBuilder_.xyPsi2PoseStamped(x, y, psi);
@@ -162,51 +234,65 @@ void DesStatePublisher::set_init_pose(double x, double y, double psi) {
 // or points can be appended to path queue w/ service append_path_
 
 void DesStatePublisher::pub_next_state() {
-    // first test if an e-stop has been triggered
-    if (e_stop_trigger_ && ((motion_mode_!=HALTING) && (motion_mode_!=E_STOPPED))) {
-    	ROS_WARN("E-STOP TRIGGERED");
-        e_stop_trigger_ = false; //reset trigger
-        //compute a halt trajectory
-        trajBuilder_.build_braking_traj(current_pose_, des_state_vec_,current_vel_state);
-        motion_mode_ = HALTING;
-        traj_pt_i_ = 0;
-        npts_traj_ = des_state_vec_.size();
-    }
 
-    if (h_e_stop_ && ((motion_mode_!=HALTING) && (motion_mode_!=E_STOPPED))) {
-    	ROS_WARN("HARDWARE E-STOP TRIGGERED");
-        h_e_stop_ = false; //reset trigger
-        //compute a halt trajectory
-        trajBuilder_.build_braking_traj(current_pose_, des_state_vec_,current_vel_state);
-        motion_mode_ = HALTING;
-        traj_pt_i_ = 0;
-        npts_traj_ = des_state_vec_.size();
-    }
 
-    if (lidar_alarm && ((motion_mode_!=HALTING) && (motion_mode_!=E_STOPPED))) {
-    	ROS_WARN("LIDAR ALARM TRIGGERED");
-        lidar_alarm = false; //reset trigger
-        //compute a halt trajectory
-        trajBuilder_.build_braking_traj(current_pose_, des_state_vec_,current_vel_state);
-        motion_mode_ = HALTING;
-        traj_pt_i_ = 0;
-        npts_traj_ = des_state_vec_.size();
-    }
+    //skip if in off mode
+    if (!OFF) {
+        // first test if an e-stop has been triggered
+       if (e_stop_trigger_ && ((motion_mode_!=HALTING) && (motion_mode_!=E_STOPPED))) {
+           	ROS_WARN("E-STOP TRIGGERED");
+            e_stop_trigger_ = false; //reset trigger
+            //compute a halt trajectory
+            trajBuilder_.build_braking_traj(current_pose_, des_state_vec_,current_vel_state);
+            motion_mode_ = HALTING;
+            traj_pt_i_ = 0;
+            npts_traj_ = des_state_vec_.size();
+        }
 
-    //or if an e-stop has been cleared
-    if (e_stop_reset_) {
-        e_stop_reset_ = false; //reset trigger
-        if (motion_mode_ != E_STOPPED) {
-            ROS_WARN("e-stop reset while not in e-stop mode");
-        }            //OK...want to resume motion from e-stopped mode;
-        else {
-            motion_mode_ = DONE_W_SUBGOAL; //this will pick up where left off
-            ROS_INFO("DONE WITH SUBGOAL");
+        if (h_e_stop_ && ((motion_mode_!=HALTING) && (motion_mode_!=E_STOPPED))) {
+        	ROS_WARN("HARDWARE E-STOP TRIGGERED");
+            h_e_stop_ = false; //reset trigger
+            //compute a halt trajectory
+            trajBuilder_.build_braking_traj(current_pose_, des_state_vec_,current_vel_state);
+            motion_mode_ = HALTING;
+            traj_pt_i_ = 0;
+            npts_traj_ = des_state_vec_.size();
+        }
+
+        if (lidar_alarm && ((motion_mode_!=HALTING) && (motion_mode_!=E_STOPPED))) {
+        	ROS_WARN("LIDAR ALARM TRIGGERED");
+            lidar_alarm = false; //reset trigger
+            //compute a halt trajectory
+            trajBuilder_.build_braking_traj(current_pose_, des_state_vec_,current_vel_state);
+            motion_mode_ = HALTING;
+            traj_pt_i_ = 0;
+            npts_traj_ = des_state_vec_.size();
+        }
+
+        //or if an e-stop has been cleared
+        if (e_stop_reset_) {
+            e_stop_reset_ = false; //reset trigger
+            if (motion_mode_ != E_STOPPED) {
+                ROS_WARN("e-stop reset while not in e-stop mode");
+            }            //OK...want to resume motion from e-stopped mode;
+            else {
+                motion_mode_ = DONE_W_SUBGOAL; //this will pick up where left off
+                ROS_INFO("DONE WITH SUBGOAL");
+            }
         }
     }
 
     //state machine; results in publishing a new desired state
     switch (motion_mode_) {
+        case OFF: //occurs when robot is switched to you the controller instead of this
+            //constantly update current pose
+            current_pose_.pose = current_state_.pose.pose;
+            current_pose_.header = current_state_.header;
+
+            seg_end_state_ = current_state_;
+            //publish whatever current state is as desired state
+            desired_state_publisher_.publish(current_state_);
+            break;
         case E_STOPPED: //this state must be reset by a service
             desired_state_publisher_.publish(halt_state_);
             break;

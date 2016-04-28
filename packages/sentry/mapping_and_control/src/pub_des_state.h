@@ -2,8 +2,8 @@
 #define PUB_DES_STATE_H_
 
 #include <queue>
+#include <stack>
 #include <traj_builder/traj_builder.h> //has almost all the headers we need
-#include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <std_srvs/Trigger.h>
 #include <mapping_and_control/path.h>
@@ -18,10 +18,10 @@
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <std_msgs/Float64.h>
 #include <tf/transform_listener.h>
 #include <tf/LinearMath/Vector3.h>
 #include <tf/transform_broadcaster.h>
+#include <math.h>
 
 
 //constants and parameters:
@@ -41,16 +41,21 @@ const double speed_max = 0.2; //1 m/sec
 const double omega_max = 0.5; //1 rad/sec
 
 const double path_move_tol = 0.1; // if path points are within 10cm, fuggidaboutit 
+//the distance required for the robot to travel in order to add a new point to the return path
+const double return_path_point_spacing = 0.1; 
 
 const int E_STOPPED = 0; //define some mode keywords
 const int DONE_W_SUBGOAL = 1;
 const int PURSUING_SUBGOAL = 2;
 const int HALTING = 3;
+const int OFF = 4;
 
 class DesStatePublisher {
 private:
 
     ros::NodeHandle nh_; // we'll need a node handle; get one upon instantiation
+
+    nav_msgs::Odometry current_state_;
 
     //some class member variables:
     nav_msgs::Path path_;
@@ -68,6 +73,7 @@ private:
     std_msgs::Float64 float_msg_;
     double des_psi_;
     std::queue<geometry_msgs::PoseStamped> path_queue_; //a C++ "queue" object, stores vertices as Pose points in a FIFO queue
+    std::stack<geometry_msgs::PoseStamped> return_path_stack; // so we can find our way home, LIFO queue
     int motion_mode_;
     bool e_stop_trigger_; //these are intended to enable e-stop via a service
     bool e_stop_reset_;
@@ -99,6 +105,8 @@ private:
     tf::TransformBroadcaster br_;
     tf::StampedTransform stfBaseLinkWrtOdom_;
     ros::Subscriber odom_subscriber_;
+    ros::Subscriber cmd_mode_subscriber_;
+
 
     // member methods:
     void initializePublishers();
@@ -107,11 +115,13 @@ private:
     bool clearEstopServiceCallback(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool lidarAlarmServiceCallback(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool flushPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
+    bool popPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool appendPathQueueCB(mapping_and_control::pathRequest& request,mapping_and_control::pathResponse& response);
 
     double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
-
+    void cmdModeCallback(const std_msgs::Int32& message_holder);
+    void goHomeRobotYoureDrunk();
 
 public:
     DesStatePublisher(ros::NodeHandle& nh);//constructor
