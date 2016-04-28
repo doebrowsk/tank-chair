@@ -36,6 +36,7 @@ catkin_simple()
 
  cs_add_executable(convert_twist src/convert_twist.cpp)
  cs_add_executable(odom src/odom.cpp)
+ cs_add_executable(cmd_vel_switch src/cmd_vel_switch.cpp)
 # cs_add_executable(simple_commander src/simple_commander.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
