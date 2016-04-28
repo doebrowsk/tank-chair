@@ -40,11 +40,11 @@ const double alpha_max = 1.0; // rad/sec^2
 const double speed_max = 0.2; //1 m/sec
 const double omega_max = 0.5; //1 rad/sec
 
-const double path_move_tol = 0.05; // if path points are within 10cm, fuggidaboutit 
+const double path_move_tol = 0.02; // if path points are within 10cm, fuggidaboutit 
 //the distance required for the robot to travel in order to add a new point to the return path
-const double return_path_point_spacing = 0.1; 
+const double return_path_point_spacing = 0.02; 
 //the delta angle required for the robot to turn in order to add a new point to the return path
-const double return_path_delta_phi = 0.3; 
+const double return_path_delta_phi = 0.1; 
 
 const int E_STOPPED = 0; //define some mode keywords
 const int DONE_W_SUBGOAL = 1;
