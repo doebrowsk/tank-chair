@@ -106,10 +106,15 @@ private:
 
     tf::TransformBroadcaster br_;
     tf::StampedTransform stfBaseLinkWrtOdom_;
+
     ros::Subscriber odom_subscriber_;
     ros::Subscriber cmd_mode_subscriber_;
     ros::Subscriber go_home_subscriber_;
 
+    ros::Subscriber tf_subscriber_;
+    geometry_msgs::Transform drift_correct_transform;
+
+    tf::TransformListener tfListener;
 
     // member methods:
     void initializePublishers();
@@ -120,11 +125,12 @@ private:
     bool flushPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool popPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool appendPathQueueCB(mapping_and_control::pathRequest& request,mapping_and_control::pathResponse& response);
+    nav_msgs::Odometry get_corrected_des_state(nav_msgs::Odometry uncorrectedState);
 
-    double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
     void cmdModeCallback(const std_msgs::Int32& message_holder);
     void goHomeRobotYoureDrunk(const std_msgs::Int32& message_holder);
+    // void tfCallback(const tf2_msgs::TFMessage& tf_message);
 
 public:
     DesStatePublisher(ros::NodeHandle& nh);//constructor

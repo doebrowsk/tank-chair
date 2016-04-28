@@ -107,6 +107,8 @@ private:
     
     // message to hold/publish steering performance data
     std_msgs::Float32MultiArray steering_errs_;
+
+    tf::TransformListener tfListener;
         
     // member methods as well:
     void initializeSubscribers(); // we will define some helper methods to encapsulate the gory details of initializing subscribers, publishers and services
