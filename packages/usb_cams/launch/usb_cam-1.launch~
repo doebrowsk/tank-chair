@@ -2,7 +2,7 @@
 
   <node name="usb_cam_1" pkg="usb_cam" type="usb_cam_node" output="screen" >
     <!-- /dev/video1 is the location of the first usb camera -->
-    <param name="video_device" value="/dev/video1" />
+    <param name="video_device" value="/dev/video0" />
     <param name="image_width" value="640" />
     <param name="image_height" value="480" />
     <param name="pixel_format" value="yuyv" />
@@ -10,6 +10,10 @@
     <param name="io_method" value="mmap"/>
   </node>
 
- 
+  <!-- node for viewing the camera image -->
+  <node name="image_view_1" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/usb_cam_1/image_raw"/>
+    <param name="autosize" value="true" />
+  </node>
 
 </launch>
