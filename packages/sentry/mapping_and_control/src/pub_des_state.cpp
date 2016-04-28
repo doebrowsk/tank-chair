@@ -200,6 +200,9 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
     if (motion_mode_ != OFF) {
 
         ROS_WARN("Robot going home");
+        while (!path_queue_.empty()) {
+            path_queue_.pop();
+        }
 
         while (!return_path_stack.empty()) {
             ROS_WARN("move a point from path stack to path queue");
