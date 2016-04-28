@@ -26,7 +26,7 @@
 //FOR REAL ROBOT
 const double default_accel_max = 0.5; //m/sec^2
 const double default_alpha_max = 1.0; //rad/sec^2
-const double default_speed_max = 0.2; //m/sec
+const double default_speed_max = 0.3; //m/sec
 const double default_omega_max = 0.5; //rad/sec
 
 

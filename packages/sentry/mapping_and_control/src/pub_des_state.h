@@ -37,7 +37,7 @@ const double dt = 0.02; //send desired-state messages at fixed rate, e.g. 0.02 s
 //FOR REAL ROBOT
 const double accel_max = 0.5; //1m/sec^2
 const double alpha_max = 1.0; // rad/sec^2
-const double speed_max = 0.2; //1 m/sec
+const double speed_max = 0.3; //1 m/sec
 const double omega_max = 0.5; //1 rad/sec
 
 const double path_move_tol = 0.02; // if path points are within 10cm, fuggidaboutit 
