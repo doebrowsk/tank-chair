@@ -2,6 +2,7 @@
 //ExampleRosClass::ExampleRosClass(ros::NodeHandle* nodehandle):nh_(*nodehandle)
 
 DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
+    
     //as_(nh, "pub_des_state_server", boost::bind(&DesStatePublisher::executeCB, this, _1),false) {
     //as_.start(); //start the server running
     //configure the trajectory builder: 
@@ -41,6 +42,15 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
     seg_end_state_ = current_des_state_;
     lidar_alarm = false;
 
+    odom_subscriber_ = nh_.subscribe("/odom", 1, &DesStatePublisher::odomCallback, this); //subscribe to odom messages
+
+}
+
+double DesStatePublisher::convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion) {
+    double quat_z = quaternion.z;
+    double quat_w = quaternion.w;
+    double phi = 2.0 * atan2(quat_z, quat_w); // cheap conversion from quaternion to heading for planar motion
+    return phi;
 }
 
 void DesStatePublisher::initializeServices() {
@@ -101,6 +111,33 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
         path_queue_.push(request.path.poses[i]);
     }
     return true;
+}
+
+void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) { 
+
+    geometry_msgs::Pose odom_pose_ = odom_rcvd.pose.pose;
+    geometry_msgs::Quaternion odom_quat_ = odom_rcvd.pose.pose.orientation;
+    double odom_phi_ = convertPlanarQuat2Phi(odom_quat_); // cheap conversion from quaternion to heading for planar motion
+    tf::Vector3 pos;
+    pos.setX(odom_pose_.position.x);
+    pos.setY(odom_pose_.position.y);
+    pos.setZ(odom_pose_.position.z);
+
+    stfBaseLinkWrtOdom_.stamp_ = ros::Time::now();
+    stfBaseLinkWrtOdom_.setOrigin(pos);
+
+    tf::Quaternion q;
+    q.setX(odom_quat_.x);
+    q.setY(odom_quat_.y);
+    q.setZ(odom_quat_.z);
+    q.setW(odom_quat_.w);
+
+    stfBaseLinkWrtOdom_.setRotation(q);
+
+    stfBaseLinkWrtOdom_.frame_id_ = "odom";
+    stfBaseLinkWrtOdom_.child_frame_id_ = "base_link";
+
+    br_.sendTransform(stfBaseLinkWrtOdom_);
 }
 
 void DesStatePublisher::set_init_pose(double x, double y, double psi) {

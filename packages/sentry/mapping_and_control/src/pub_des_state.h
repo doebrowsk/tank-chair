@@ -10,6 +10,19 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
 
+#include <nav_msgs/Odometry.h>
+#include <tf/LinearMath/Vector3.h>
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <std_msgs/Float64.h>
+#include <tf/transform_listener.h>
+#include <tf/LinearMath/Vector3.h>
+#include <tf/transform_broadcaster.h>
+
 
 //constants and parameters:
 const double dt = 0.02; //send desired-state messages at fixed rate, e.g. 0.02 sec = 50Hz
@@ -83,6 +96,10 @@ private:
     //a trajectory-builder object; 
     TrajBuilder trajBuilder_; 
 
+    tf::TransformBroadcaster br_;
+    tf::StampedTransform stfBaseLinkWrtOdom_;
+    ros::Subscriber odom_subscriber_;
+
     // member methods:
     void initializePublishers();
     void initializeServices();
@@ -91,6 +108,10 @@ private:
     bool lidarAlarmServiceCallback(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool flushPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool appendPathQueueCB(mapping_and_control::pathRequest& request,mapping_and_control::pathResponse& response);
+
+    double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
+    void odomCallback(const nav_msgs::Odometry& odom_rcvd);
+
 
 public:
     DesStatePublisher(ros::NodeHandle& nh);//constructor

@@ -29,7 +29,7 @@ Move the robot (under open-loop control), so AMCL will publish updated pose esti
 `rosrun mobot_pub_des_state pub_des_state_path_client_3x3`  
 
 In Rviz, display several frames to visualize how odom_tf is working.  Set the fixed frame to "map".
-Display axes for "base_laser1_link", "amcl_base_laser1_link", "est_base" and "drifty_odom".
+Display axes for "base_link", "amcl_base_link", "est_base" and "drifty_odom".
 These will illustrate how amcl computes robot-pose updates infrequently, how the drifty_odom frame
 moves around in the map, and how combining these to get "est_base" results in smooth robot-pose
 estimates with no cumulative drift.

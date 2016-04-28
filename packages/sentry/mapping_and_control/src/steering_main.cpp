@@ -191,10 +191,8 @@ int main(int argc, char **argv) {
 	//
 	//	append_client.call(path_srv);
 
-
 	ros::Subscriber point_click_subscriber = n.subscribe("clicked_point", 1, pointClickCallback);
 	ros::Subscriber motion_mode_subscriber = n.subscribe("motion_mode", 1, motionModeCallback);
-	ros::Subscriber lidar_subscriber = n.subscribe("lidar_alarm", 1, lidarAlarmCallback);
 
 	ros::spin(); //this is essentially a "while(1)" statement, except it
 	// forces refreshing wakeups upon new data arrival

@@ -11,22 +11,9 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     ROS_INFO("in class constructor of DemoTfListener");
     tfListener_ = new tf::TransformListener; //create a transform listener
 
-    initializeSubscribers(); // package up the messy work of creating subscribers; do this overhead in constructor
-    //initializePublishers();
-    odom_count_=0;
-    odom_phi_ = 1000.0; // put in impossible value for heading; test this value to make sure we have received a viable odom message
-    ROS_INFO("waiting for valid odom message...");
-    while (odom_phi_ > 500.0) {
-        ros::Duration(0.5).sleep(); // sleep for half a second
-        std::cout << ".";
-        ros::spinOnce();
-    }
-    ROS_INFO("constructor: got an odom message; ready to roll");
-    
-
     // wait to start receiving valid tf transforms between odom and link2:
     bool tferr = true;
-    ROS_INFO("waiting for tf between base_laser1_link and odom...");
+    ROS_INFO("waiting for tf between base_link and odom..."); 
     while (tferr) {
         tferr = false;
         try {
@@ -34,17 +21,17 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
             //The direction of the transform returned will be from the target_frame to the source_frame. 
             //Which if applied to data, will transform data in the source_frame into the target_frame. 
             //See tf/CoordinateFrameConventions#Transform_Direction
-            tfListener_->lookupTransform("odom", "base_laser1_link", ros::Time(0), stfBaseLinkWrtOdom_);
+            tfListener_->lookupTransform("odom", "base_link", ros::Time(0), stfBaseLinkWrtOdom_);
         } catch (tf::TransformException &exception) {
-            ROS_WARN("%s; retrying...", exception.what());
+            ROS_WARN("%s; retrying!...", exception.what());
             tferr = true;
             ros::Duration(0.5).sleep(); // sleep for half a second
             ros::spinOnce();
         }
     }
-    ROS_INFO("odom to base_laser1_link tf is good");
+    ROS_INFO("odom to base_link tf is good");
 
-    //now check for xform base_laser1_link w/rt map; would need amcl, or equivalent running
+    //now check for xform base_link w/rt map; would need amcl, or equivalent running
     tferr = true;
     ROS_INFO("waiting for tf between odom and map...");
     while (tferr) {
@@ -69,7 +56,7 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     tf::Quaternion quat(0, 0, 0, 1);
     stfAmclBaseLinkWrtMap_.setRotation(quat);	//all rotations 0
     stfAmclBaseLinkWrtMap_.frame_id_ = "map";
-    stfAmclBaseLinkWrtMap_.child_frame_id_ = "base_laser1_link";
+    stfAmclBaseLinkWrtMap_.child_frame_id_ = "base_link";
     stfAmclBaseLinkWrtMap_.stamp_ = ros::Time::now();           
 
     cout<<endl<<"init stfAmclBaseLinkWrtMap_"<<endl;
@@ -80,14 +67,23 @@ OdomTf::OdomTf(ros::NodeHandle* nodehandle) : nh_(*nodehandle) { // constructor
     stfDriftyOdomWrtMap_.frame_id_ = "map"; // declare the respective frames
     stfDriftyOdomWrtMap_.child_frame_id_ = "drifty_odom"; 
 
-    
+    initializeSubscribers(); // package up the messy work of creating subscribers; do this overhead in constructor
+    //initializePublishers();
+    odom_count_=0;
+    odom_phi_ = 1000.0; // put in impossible value for heading; test this value to make sure we have received a viable odom message
+    ROS_INFO("waiting for valid odom message...");
+    while (odom_phi_ > 500.0) {
+        ros::Duration(0.5).sleep(); // sleep for half a second
+        std::cout << ".";
+        ros::spinOnce();
+    }
+    ROS_INFO("constructor: got an odom message; ready to roll");
 
 }
 
 void OdomTf::initializeSubscribers() {
     ROS_INFO("Initializing Subscribers");
-    odom_subscriber_ = nh_.subscribe("/odom", 1, &OdomTf::odomCallback, this); //subscribe to odom messages
-    drifty_odom_subscriber_ = nh_.subscribe("/drifty_odom", 1, &OdomTf::driftyOdomCallback, this); //subscribe to odom messages
+    odom_subscriber_ = nh_.subscribe("/drifty_odom", 1, &OdomTf::odomCallback, this); //subscribe to odom messages
     amcl_subscriber_ = nh_.subscribe("/amcl_pose", 1, &OdomTf::amclCallback, this); //subscribe to odom messages
 
     // add more subscribers here, as needed
@@ -253,33 +249,6 @@ void OdomTf::printStampedPose(geometry_msgs::PoseStamped stPose) {
 }
 
 void OdomTf::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
-
-    odom_pose_ = odom_rcvd.pose.pose;
-    odom_quat_ = odom_rcvd.pose.pose.orientation;
-    odom_phi_ = convertPlanarQuat2Phi(odom_quat_); // cheap conversion from quaternion to heading for planar motion
-    tf::Vector3 pos;
-    pos.setX(odom_pose_.position.x);
-    pos.setY(odom_pose_.position.y);
-    pos.setZ(odom_pose_.position.z);
-
-    stfBaseLinkWrtOdom_.stamp_ = ros::Time::now();
-    stfBaseLinkWrtOdom_.setOrigin(pos);
-
-    tf::Quaternion q;
-    q.setX(odom_quat_.x);
-    q.setY(odom_quat_.y);
-    q.setZ(odom_quat_.z);
-    q.setW(odom_quat_.w);
-
-    stfBaseLinkWrtOdom_.setRotation(q);
-
-    stfBaseLinkWrtOdom_.frame_id_ = "odom";
-    stfBaseLinkWrtOdom_.child_frame_id_ = "base_laser1_link";
-
-    br_.sendTransform(stfBaseLinkWrtOdom_);
-}
-
-void OdomTf::driftyOdomCallback(const nav_msgs::Odometry& odom_rcvd) {
     odom_count_++;
     // copy some of the components of the received message into member vars
     // we care about speed and spin, as well as position estimates x,y and heading
@@ -309,7 +278,7 @@ void OdomTf::driftyOdomCallback(const nav_msgs::Odometry& odom_rcvd) {
     q.setW(odom_quat_.w);
     stfBaseLinkWrtDriftyOdom_.setRotation(q);
     stfBaseLinkWrtDriftyOdom_.frame_id_ = "drifty_odom";
-    stfBaseLinkWrtDriftyOdom_.child_frame_id_ = "base_laser1_link";
+    stfBaseLinkWrtDriftyOdom_.child_frame_id_ = "base_link";
     //cout<<endl<<"odom_count: "<<odom_count_<<endl;
     //stfDriftyOdomWrtBase_.child_frame_id_ = "drifty_odom"; // make this legal for multiply
     
@@ -338,15 +307,15 @@ void OdomTf::driftyOdomCallback(const nav_msgs::Odometry& odom_rcvd) {
     // cout<<endl<<"stfBaseLinkWrtDriftyOdom_"<<endl;
     //printStampedTf(stfBaseLinkWrtDriftyOdom_);       
     
-    //cascde the frames: for frames b==base_laser1_link, m==map, do==drifty_odom,
+    //cascde the frames: for frames b==base_link, m==map, do==drifty_odom,
     // 
     // T_b/m = m^T_b = m^T_do * do^T_b = T_do/m * T_b/do
     // put the answer in stfEstBaseWrtMap_
     multiply_stamped_tfs(stfDriftyOdomWrtMap_,stfBaseLinkWrtDriftyOdom_,stfEstBaseWrtMap_);
-    //publish this frame, for visualization; change "base_laser1_link" to "est_base" to avoid name conflict
+    //publish this frame, for visualization; change "base_link" to "est_base" to avoid name conflict
     // and kinematic loop;  Visualized result of est_base is an estimate of the robot's pose in
     // the map frame, using amcl and using the imperfect (drifty) odom estimate
-    // ideally, this frame is virtually perfect, matching the base_laser1_link frame known to rviz
+    // ideally, this frame is virtually perfect, matching the base_link frame known to rviz
     stfEstBaseWrtMap_.child_frame_id_ = "est_base";
     //cout<<endl<<"stfEstBaseWrtMap_"<<endl;
     // printStampedTf(stfEstBaseWrtMap_);   
@@ -383,7 +352,7 @@ void OdomTf::amclCallback(const geometry_msgs::PoseWithCovarianceStamped& amcl_r
     q.setW(amcl_quat_.w);
     stfAmclBaseLinkWrtMap_.setRotation(q);
     stfAmclBaseLinkWrtMap_.frame_id_ = "map";
-    stfAmclBaseLinkWrtMap_.child_frame_id_ = "base_laser1_link";
+    stfAmclBaseLinkWrtMap_.child_frame_id_ = "base_link";
     //cout<<endl<<"stfAmclBaseLinkWrtMap_"<<endl;
     //printStampedTf(stfAmclBaseLinkWrtMap_);      
     
@@ -409,9 +378,9 @@ void OdomTf::amclCallback(const geometry_msgs::PoseWithCovarianceStamped& amcl_r
     // in odom callback
     
     //amcl makes its own estimate of the pose of the robot's base frame w/rt map
-    // publish these updates as they are available.  Use a new name (amcl_base_laser1_link) to avoid
-    // conflict with "base_laser1_link" already used in rviz (which is unrealistically smooth and accurate)
-    stfAmclBaseLinkWrtMap_.child_frame_id_ = "amcl_base_laser1_link";
+    // publish these updates as they are available.  Use a new name (amcl_base_link) to avoid
+    // conflict with "base_link" already used in rviz (which is unrealistically smooth and accurate)
+    stfAmclBaseLinkWrtMap_.child_frame_id_ = "amcl_base_link";
     br_.sendTransform(stfAmclBaseLinkWrtMap_);
     
 }
