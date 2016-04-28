@@ -28,7 +28,7 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
     halt_twist_.angular.x = 0.0;
     halt_twist_.angular.y = 0.0;
     halt_twist_.angular.z = 0.0;
-    motion_mode_ = DONE_W_SUBGOAL; //init in state ready to process new goal
+    motion_mode_ = OFF; //init in state ready to process new goal
     h_e_stop_ = false;
     e_stop_trigger_ = false; //these are intended to enable e-stop via a service
     e_stop_reset_ = false; //and reset estop
@@ -44,7 +44,7 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
 
     odom_subscriber_ = nh_.subscribe("/odom", 1, &DesStatePublisher::odomCallback, this); //subscribe to odom messages
     cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
-    go_home_subscriber_ = nh_.subscribe("/go_home", 1, &DesStatePublisher::cmdModeCallback, this);
+    go_home_subscriber_ = nh_.subscribe("/go_home", 1, &DesStatePublisher::goHomeRobotYoureDrunk, this);
 }
 
 double DesStatePublisher::convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion) {
@@ -177,18 +177,19 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 
 void DesStatePublisher::cmdModeCallback(const std_msgs::Int32& message_holder) {
 
-    if (message_holder.data == 0) {
+    if (message_holder.data != 0 && message_holder.data != 1) {
+            ROS_WARN("Got unexpected motion_mode_ from cmd_mode topic");
+    }
+    else if (message_holder.data == 0) {
         motion_mode_ = OFF;
     }
     else if (message_holder.data == 1 && motion_mode_ == OFF) {
         motion_mode_ = DONE_W_SUBGOAL;
     }
-    else {
-        ROS_WARN("Got unexpected motion_mode_ from cmd_mode topic");
-    }
+
 }
 
-void DesStatePublisher::goHomeRobotYoureDrunk() {
+void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_holder) {
     
     if (motion_mode_ != OFF) {
 

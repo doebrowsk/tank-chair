@@ -122,7 +122,7 @@ private:
     double convertPlanarQuat2Phi(geometry_msgs::Quaternion quaternion);
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
     void cmdModeCallback(const std_msgs::Int32& message_holder);
-    void goHomeRobotYoureDrunk();
+    void goHomeRobotYoureDrunk(const std_msgs::Int32& message_holder);
 
 public:
     DesStatePublisher(ros::NodeHandle& nh);//constructor
