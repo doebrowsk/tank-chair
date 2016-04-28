@@ -106,6 +106,7 @@ private:
     tf::StampedTransform stfBaseLinkWrtOdom_;
     ros::Subscriber odom_subscriber_;
     ros::Subscriber cmd_mode_subscriber_;
+    ros::Subscriber go_home_subscriber_;
 
 
     // member methods:

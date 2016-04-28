@@ -44,6 +44,8 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
 
     odom_subscriber_ = nh_.subscribe("/odom", 1, &DesStatePublisher::odomCallback, this); //subscribe to odom messages
     cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
+    go_home_subscriber_ = nh_.subscribe("/go_home", 1, &DesStatePublisher::cmdModeCallback, this);
+
 
 }
 
