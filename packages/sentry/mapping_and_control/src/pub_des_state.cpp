@@ -174,6 +174,8 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
         double last_psi = trajBuilder_.convertPlanarQuat2Psi(topPoseInStack.pose.orientation);
         double psiDiff = abs(current_psi - last_psi);
 
+        ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
+
         if (dist >= return_path_point_spacing && psiDiff >= return_path_delta_phi) {
             ROS_INFO("return_path_stack got a point");
             return_path_stack.push(poseToAdd);
