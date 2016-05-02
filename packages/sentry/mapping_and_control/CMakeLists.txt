@@ -25,7 +25,7 @@ catkin_simple()
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Libraries: uncomment the following and edit arguments to create a new library
-# cs_add_library(my_lib src/my_lib.cpp)   
+cs_add_library(sentry_pub_des_state_lib src/pub_des_state.cpp)   
 
 # Executables: uncomment the following and edit arguments to compile new nodes
 # may add more of these lines for more nodes from the same package
@@ -33,11 +33,11 @@ catkin_simple()
 cs_add_executable(lidar src/lidar.cpp)
 cs_add_executable(path_client src/steering_main.cpp)
 cs_add_executable(lin_steering src/lin_steering_wrt_odom.cpp)
-cs_add_executable(pub_des_state_startup src/pub_des_state_startup_main.cpp src/pub_des_state.cpp)
+cs_add_executable(pub_des_state_startup src/pub_des_state_startup_main.cpp)
 
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
-# target_link_library(example my_lib)
+target_link_libraries(pub_des_state_startup sentry_pub_des_state_lib)
 
 cs_install()
 cs_export()

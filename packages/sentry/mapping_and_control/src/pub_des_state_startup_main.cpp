@@ -1,4 +1,4 @@
-#include "pub_des_state.h"
+#include <mapping_and_control/pub_des_state.h>
 //this version starts up a desired-state publisher, but does not cause any initial moves
 int main(int argc, char **argv) {
 

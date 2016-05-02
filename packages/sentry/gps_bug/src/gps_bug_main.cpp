@@ -7,32 +7,62 @@
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <traj_builder/traj_builder.h>
+#include <mapping_and_control/pub_des_state.h>
 
-double dt = 0.02;
-nav_msgs::NavSatFix last_gps;
+// already declared in pub_des_state
+// double dt = 0.02;
+sensor_msgs::NavSatFix last_gps;
 
-void gpscb(const nav_msgs::NavSatFix& message_holder){
+void gpscb(const sensor_msgs::NavSatFix& message_holder){
   last_gps = message_holder;
 }
 
-void filter_angle_offset(float &angle, nav_msgs::NavSatFix start, nav_msgs::NavSatFix end){
-	// //this is some sort of filter i guess
-	// float dist = sqrt(pow(start.latitude-end.latitude,2)+pow(start.longitude-end.longitude,2));
-	// float xcomp = cos(angle)*5 
+void filter_angle_offset(float &angle, sensor_msgs::NavSatFix start, sensor_msgs::NavSatFix end){
+	// linear distance covered in second gps calibration
+	float dist = sqrt(pow(start.latitude-end.latitude,2)+pow(start.longitude-end.longitude,2));
+
+	// find nominal values of distance covered based on current offset angle
+	// nominal x distance
+	float nom_x_dist = cos(angle)*5.0;
+	// nominal y dsitance
+	float nom_y_dist = sin(angle)*5.0;
+	ROS_INFO("Nominal distance from angle offset: X: %f  Y: %f", nom_x_dist, nom_y_dist);
+
+	// find stated gps distance components
+	// first get gps angle of motion
+	float gps_angle = atan2((end.latitude - start.latitude), (end.longitude - start.longitude));
+	// gps x distance
+	float gps_x_dist = cos(gps_angle) * dist;
+	// gps y distance
+	float gps_y_dist = sin(gps_angle) * dist;
+
+	// compare gps distance to 5.0 meters which was expected
+	float dist_ratio = dist / 5.0;
+	float x_ratio = gps_x_dist / nom_x_dist;
+	float y_ration = gps_y_dist / nom_y_dist;
+
+	// compute a new offset angle
+	// have a preference for original angle: 0.7 weight vs. 0.3 for new angle
+
 }
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "des_state_publisher");
+    ros::init(argc, argv, "gps_bug");
     ros::NodeHandle nh;
-    ros::Publisher twist_commander = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    ros::Publisher twist_commander = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     ros::Rate looprate(1 / dt);
+
+    ros::Publisher des_state_publisher = nh.advertise<nav_msgs::Odometry>("/desState", 1);
+    ros::Publisher des_psi_publisher = nh.advertise<std_msgs::Float64>("/desPsi", 1);
 
     ros::Subscriber gps_sub = nh.subscribe("gps_fix_psr",1,gpscb);
 
     //CALIBRATION STUFF....................................................................................
     float odom_offset = 0.0;
     ros::spinOnce();
-    nav_msgs::NavSatFix start_gps = last_gps;
+    // set initial gps location
+    sensor_msgs::NavSatFix start_gps = last_gps;
     TrajBuilder trajBuilder; 
     trajBuilder.set_dt(dt);
     trajBuilder.set_alpha_max(0.6);
@@ -87,7 +117,10 @@ int main(int argc, char **argv) {
     }
 
     ros::spinOnce();
+    // calibrate according to first move
     odom_offset = atan2(last_gps.latitude-start_gps.latitude,last_gps.longitude-start_gps.longitude);
+
+    // start second calibration
     start_gps = last_gps;
 
     last_state = vec_of_states.back();
@@ -107,6 +140,13 @@ int main(int argc, char **argv) {
     last_state = vec_of_states.back();
     g_start_pose.header = last_state.header;
     g_start_pose.pose = last_state.pose.pose;
+
+    // compare first calibration phase to second
+    ros::spinOnce();
+    // load initial angle offset calculated, and the second move's gps points
+    filter_angle_offset(odom_offset, start_gps, last_gps);
+
+    // odom_offset now contains calibrated offset
     
     //DONE CALIBRATING............................................................................................................
 
