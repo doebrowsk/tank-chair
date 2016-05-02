@@ -27,6 +27,7 @@ void scancb(const sensor_msgs::LaserScan& message_holder){
 
 		}
 	}
+	scanpub.publish(cspace_scan);
 }
 
 int main(int argc, char **argv) {
