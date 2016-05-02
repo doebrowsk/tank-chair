@@ -16,9 +16,10 @@
 
 <node name="odom_tf" pkg="odom_tf" type="odom_tf"/>
 
-<node name="lin_steering" pkg="mapping_and_control" type="lin_steering" />
+
+ <!-- <node name="lin_steering" pkg="mapping_and_control" type="lin_steering" />
   
-<node name="path_client" pkg="mapping_and_control" type="path_client" />
+<node name="path_client" pkg="mapping_and_control" type="path_client" /> -->
 
 
 </launch>
