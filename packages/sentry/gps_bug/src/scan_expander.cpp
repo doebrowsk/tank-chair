@@ -3,7 +3,7 @@
 #include <math.h>
 
 ros::Publisher scanpub;
-sensor_msgs::LaserScan& message_holder;
+sensor_msgs::LaserScan message_holder;
 
 void scancb(const sensor_msgs::LaserScan& input){
 	message_holder = input;
