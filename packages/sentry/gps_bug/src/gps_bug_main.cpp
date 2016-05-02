@@ -8,10 +8,8 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <traj_builder/traj_builder.h>
-#include <mapping_and_control/pub_des_state.h>
 
-// already declared in pub_des_state
-// double dt = 0.02;
+double dt = 0.02;
 sensor_msgs::NavSatFix last_gps;
 
 void gpscb(const sensor_msgs::NavSatFix& message_holder){
@@ -19,32 +17,33 @@ void gpscb(const sensor_msgs::NavSatFix& message_holder){
 }
 
 void filter_angle_offset(float &angle, sensor_msgs::NavSatFix start, sensor_msgs::NavSatFix end){
+	ROS_INFO("Offset angle before filter:  %f", angle);
+
 	// linear distance covered in second gps calibration
-	float dist = sqrt(pow(start.latitude-end.latitude,2)+pow(start.longitude-end.longitude,2));
+	// float dist = sqrt(pow(start.latitude-end.latitude,2)+pow(start.longitude-end.longitude,2));
 
 	// find nominal values of distance covered based on current offset angle
-	// nominal x distance
-	float nom_x_dist = cos(angle)*5.0;
+	// nominal x distance component
+	float nom_x_comp = cos(angle);
 	// nominal y dsitance
-	float nom_y_dist = sin(angle)*5.0;
-	ROS_INFO("Nominal distance from angle offset: X: %f  Y: %f", nom_x_dist, nom_y_dist);
+	float nom_y_comp = sin(angle);
 
 	// find stated gps distance components
 	// first get gps angle of motion
 	float gps_angle = atan2((end.latitude - start.latitude), (end.longitude - start.longitude));
 	// gps x distance
-	float gps_x_dist = cos(gps_angle) * dist;
+	float gps_x_comp = cos(gps_angle);
 	// gps y distance
-	float gps_y_dist = sin(gps_angle) * dist;
+	float gps_y_comp = sin(gps_angle);
 
-	// compare gps distance to 5.0 meters which was expected
-	float dist_ratio = dist / 5.0;
-	float x_ratio = gps_x_dist / nom_x_dist;
-	float y_ration = gps_y_dist / nom_y_dist;
+	// average x and y components
+	// prefer nominal component over gps: 0.7 weight vs 0.3 for adjustment
+	float x_comp = nom_x_comp * 0.7 + gps_x_comp * 0.3;
+	float y_comp = nom_y_comp * 0.7 + gps_y_comp * 0.3;
 
 	// compute a new offset angle
-	// have a preference for original angle: 0.7 weight vs. 0.3 for new angle
-
+	angle = atan2(y_comp, x_comp);
+	ROS_INFO("New offset angle after filter: %f", angle);
 }
 
 int main(int argc, char **argv) {
@@ -150,6 +149,5 @@ int main(int argc, char **argv) {
     
     //DONE CALIBRATING............................................................................................................
 
-
-
+    // run main routine
 }
