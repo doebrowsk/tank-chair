@@ -19,7 +19,7 @@ void scancb(const sensor_msgs::LaserScan& message_holder){
 			float scan_ang_size = acos(horizon/distance);
 			float circle_ang_size = 90 - scan_ang_size;
 			float scan_ang_diff = abs(scantofill-compare)/cspace_scan.angle_increment;
-			float cspace_range = (distance-radius)*(1+1/cos(ang_diff));// distance to the line tangent to the circle
+			float cspace_range = (distance-radius)*(1+1/cos(scan_ang_diff));// distance to the line tangent to the circle
 			cspace_range+= radius-cos(circle_ang_size*scan_ang_diff/scan_ang_size);
 			if (cspace_range<cspace_scan.ranges[scantofill]){
 				cspace_scan.ranges[scantofill]=cspace_range;
@@ -35,6 +35,6 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     scanpub = nh.advertise<sensor_msgs::LaserScan>("gps_bug/cspace_scan", 1);
     ros::Subscriber scansub = nh.subscribe("scan",1,scancb);
-    ros::Spin();
+    ros::spin();
 
 }
