@@ -114,7 +114,7 @@ private:
     ros::Subscriber go_home_subscriber_;
 
     ros::Subscriber tf_subscriber_;
-    geometry_msgs::Transform drift_correct_transform;
+    //geometry_msgs::Transform drift_correct_transform;
 
     // member methods:
     void initializePublishers();
