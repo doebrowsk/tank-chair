@@ -11,7 +11,7 @@ void scancb(const sensor_msgs::LaserScan& message_holder){
 	for (int scantofill = 0; scantofill < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;scantofill++){
 		for (int compare = 0; compare < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;compare++){
 			float distance = 8;
-			if (compare==100) distance = 3;
+			if (compare==90) distance = 3;
 			if (distance < radius){
 				cspace_scan.ranges[scantofill]=0.0;
 				continue;
@@ -24,6 +24,7 @@ void scancb(const sensor_msgs::LaserScan& message_holder){
 			float cspace_range = (distance-radius)/cos(scan_ang_diff);// distance to the line tangent to the circle
 			if (cspace_range<0) ROS_INFO("dist to line neg");
 			cspace_range+= radius*(1-cos(circle_ang_size*scan_ang_diff/scan_ang_size));
+			if (compare>75 && compare < 105) ROS_INFO("cang %f, sang_diff %f, sang %f,"circle_ang_size, scan_ang_diff, scan_ang_size);
 			if (cspace_range<0) ROS_INFO("total neg");
 			if (cspace_range<cspace_scan.ranges[scantofill]){
 				cspace_scan.ranges[scantofill]=cspace_range;
