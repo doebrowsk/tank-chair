@@ -115,7 +115,7 @@ bool DesStatePublisher::popPathQueueCB(std_srvs::TriggerRequest& request, std_sr
 bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& request, mapping_and_control::pathResponse& response) {
 
     int npts = request.path.poses.size();
-    ROS_INFO("appending path queue with %d points", npts);
+    ROS_INFO("APPENDING path queue with %d points", npts);
     for (int i = 0; i < npts; i++) {
         path_queue_.push(get_corrected_des_state(request.path.poses[i]));
     }
@@ -173,9 +173,9 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
         double current_psi = trajBuilder_.convertPlanarQuat2Psi(current_state_.pose.pose.orientation);
         double last_psi = trajBuilder_.convertPlanarQuat2Psi(topPoseInStack.pose.orientation);
         double psiDiff = abs(current_psi - last_psi);
-        ROS_INFO("(currentX, currentY, lastX, lastY,current_psi,last_psi = %f, %f, %f, %f, %f, %f)",currentX, currentY, lastX, lastY,current_psi,last_psi);
+        //ROS_INFO("(currentX, currentY, lastX, lastY,current_psi,last_psi = %f, %f, %f, %f, %f, %f)",currentX, currentY, lastX, lastY,current_psi,last_psi);
 
-        ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
+        //ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
 
         if (dist >= return_path_point_spacing && psiDiff >= return_path_delta_phi) {
             ROS_INFO("return_path_stack got a point");
