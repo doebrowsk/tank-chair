@@ -225,6 +225,9 @@ int main(int argc, char **argv) {
     while(!done){
     	
     	ros::spinOnce();
+<<<<<<< HEAD
+    	ROS_INFO("has found goal: %d", goalpointfound);
+=======
     	// ROS_INFO("has found goal: %s", goalpointfound.toString());
     	if(goalpointfound) {
     		ROS_INFO("Has found goal: TRUE");
@@ -232,6 +235,7 @@ int main(int argc, char **argv) {
     		ROS_INFO("Has found goal: FALSE");
     	}
     	
+>>>>>>> 7295f2ed831afae11911b4b47ae16af7cd073cd5
         ROS_INFO("current angle: %f",gps_angle);
     	//rotate towards goal
         if (goalpointfound){
@@ -284,7 +288,11 @@ int main(int argc, char **argv) {
     			// 
     			for (int i = midpoint-1; i > 0; i --){
     				//look for a discontinuity
+<<<<<<< HEAD
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3|| last_scan.ranges[i]>7){
+=======
     				if (last_scan.ranges[i]-last_scan.ranges[i+1]>1.0|| last_scan.ranges[i]>6.0){
+>>>>>>> 7295f2ed831afae11911b4b47ae16af7cd073cd5
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i+1]);
@@ -318,7 +326,11 @@ int main(int argc, char **argv) {
     			motion_state=2;
     			bool goalpointfound = false;
     			for (int i = midpoint+1; i < midpoint*2-1; i++){
+<<<<<<< HEAD
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>3|| last_scan.ranges[i]>7){
+=======
     				if (last_scan.ranges[i]-last_scan.ranges[i-1]>1.0|| last_scan.ranges[i]>6.0){
+>>>>>>> 7295f2ed831afae11911b4b47ae16af7cd073cd5
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i-1]);
