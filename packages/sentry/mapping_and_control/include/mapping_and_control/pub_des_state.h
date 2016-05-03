@@ -107,6 +107,8 @@ private:
     tf::TransformBroadcaster br_;
     tf::StampedTransform stfBaseLinkWrtOdom_;
 
+    tf::TransformListener tfListener;
+
     ros::Subscriber odom_subscriber_;
     ros::Subscriber cmd_mode_subscriber_;
     ros::Subscriber go_home_subscriber_;
