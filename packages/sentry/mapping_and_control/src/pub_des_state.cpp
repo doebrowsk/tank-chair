@@ -51,7 +51,6 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
     cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
     go_home_subscriber_ = nh_.subscribe("/go_home", 1, &DesStatePublisher::goHomeRobotYoureDrunk, this);
     // tf_subscriber_ = nh_.subscribe("/tf", 1, &DesStatePublisher::tfCallback, this);
-
 }
 
 void DesStatePublisher::initializeServices() {
@@ -405,6 +404,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 
     ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
+    tf::TransformListener tfListener;
     if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
         ROS_WARN("EYY can transform");
         // tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);

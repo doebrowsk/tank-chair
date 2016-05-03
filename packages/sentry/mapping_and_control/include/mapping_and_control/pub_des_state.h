@@ -114,8 +114,6 @@ private:
     ros::Subscriber tf_subscriber_;
     geometry_msgs::Transform drift_correct_transform;
 
-    tf::TransformListener tfListener;
-
     // member methods:
     void initializePublishers();
     void initializeServices();
