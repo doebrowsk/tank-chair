@@ -118,7 +118,7 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
     ROS_INFO("appending path queue with %d points", npts);
     for (int i = 0; i < npts; i++) {
         path_queue_.push(get_corrected_des_state(request.path.poses[i]));
-    }
+   }
     return true;
 }
 
@@ -318,7 +318,7 @@ void DesStatePublisher::pub_next_state() {
         case HALTING: //e-stop service callback sets this mode
             //if need to brake from e-stop, service will have computed
             // new des_state_vec_, set indices and set motion mode;
-        	ROS_INFO("HALTING");
+            ROS_INFO("HALTING");
             current_des_state_ = des_state_vec_[traj_pt_i_];
             current_des_state_.header.stamp = ros::Time::now();
             desired_state_publisher_.publish(current_des_state_);
@@ -371,6 +371,9 @@ void DesStatePublisher::pub_next_state() {
             //see if there is another subgoal is in queue; if so, use
             //it to compute a new trajectory and change motion mode
             if (!path_queue_.empty()) {
+
+ROS_WARN("DONE 1");
+
                 int n_path_pts = path_queue_.size();
                 ROS_WARN("%d points in path queue", n_path_pts);
                 start_pose_ = current_pose_;
@@ -381,7 +384,11 @@ void DesStatePublisher::pub_next_state() {
                 motion_mode_ = PURSUING_SUBGOAL; // got a new plan; change mode to pursue it
                 ROS_INFO("PURSUING SUBGOAL");
             } else { //no new goal? stay halted in this mode 
-                // by simply reiterating the last state sent (should have zero vel)
+                
+
+ROS_WARN("DONE 2");
+
+// by simply reiterating the last state sent (should have zero vel)
                 desired_state_publisher_.publish(seg_end_state_);
             }
             break;
@@ -401,52 +408,57 @@ void DesStatePublisher::pub_next_state() {
 
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped) {
     
-    geometry_msgs::PoseStamped correctedPoseStamped;
-
     ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
     tf::StampedTransform odom_to_map;
 
     //if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
-    if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
+//    if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
 
-        bool failure = true;
-        ROS_INFO("waiting for pose transform..."); 
-        while (failure) {
-        failure = false;
-            try {
-                //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+  //      bool failure = true;
+    //    ROS_INFO("waiting for pose transform..."); 
+    //    while (failure) {
+    //        failure = false;
+    //        try {
+    //            //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
                
-               //   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+    //           //   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
 
-	        tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
+//	        tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
 
-            } catch (tf::TransformException &exception) {
-                ROS_WARN("%s; retrying lookup!!!", exception.what());
-                failure = true;
-                ros::Duration(0.5).sleep(); // sleep for half a second
-            }
-        }
+  //          } catch (tf::TransformException &exception) {
+    //            ROS_WARN("%s; retrying lookup!!!", exception.what());
+    //            failure = true;
+    //            ros::Duration(0.5).sleep(); // sleep for half a second
+    //        }
+    //    }
    
-        ROS_WARN("transform complete");
-    }
-    else {
-        ROS_WARN("TEARS can't transform");
-    }
+  //      ROS_WARN("transform complete");
+  //  }
+  //  else {
+  //      ROS_WARN("TEARS can't transform");
+  //  }
 
-    double x = odom_to_map.getOrigin().x();
-    double y = odom_to_map.getOrigin().y();
-//    double psi = trajBuilder_.convertPlanarQuat2Psi(odom_to_map.getRotation());
+  //  double x = odom_to_map.getOrigin().x();
+  //  double y = odom_to_map.getOrigin().y();
+  //  double psi = odom_to_map.getRotation().getAngle();
 
-    ROS_WARN("(x,y,psi) is (%f,%f)",x,y);
+  //  ROS_WARN("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
 
-    ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
+  //  geometry_msgs::PoseStamped correctedPoseStamped = uncorrectedPoseStamped;
 
-    return correctedPoseStamped;
+  //  correctedPoseStamped.pose.position.x += x;
+  //  correctedPoseStamped.pose.position.y += y;
+  //  double ogPsi = trajBuilder_.convertPlanarQuat2Psi(correctedPoseStamped.pose.orientation);
+  //  correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
+
+  //  ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
+
+  //  return correctedPoseStamped;
 
 
 
-//return uncorrectedPoseStamped;
+return uncorrectedPoseStamped;
 
 
     // double driftX = drift_correct_transform.translation.x;
