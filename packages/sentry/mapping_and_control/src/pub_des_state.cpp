@@ -254,9 +254,6 @@ void DesStatePublisher::set_init_pose(double x, double y, double psi) {
 
 void DesStatePublisher::pub_next_state() {
 
-    ROS_WARN("pub_next_state called!!!");
-
-
     //skip if in off mode
     if (!OFF) {
         // first test if an e-stop has been triggered
@@ -406,7 +403,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
     
     geometry_msgs::PoseStamped correctedPoseStamped;
 
-    //("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedStatePose.pose.position.x, uncorrectedStatePose.pose.position.y);
+    ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
     if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
         tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
@@ -415,7 +412,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
         ROS_WARN("TEARS can't transform");
     }
 
-    //ROS_WARN("AFTER: x,y %f, %f", correctedStatePose.pose.position.x, correctedStatePose.pose.position.y);
+    ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
     return correctedPoseStamped;
 
