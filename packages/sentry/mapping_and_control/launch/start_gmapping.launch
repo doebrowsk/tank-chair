@@ -1,6 +1,6 @@
 <launch>
 
-<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan _base_frame:=base_laser1_link"/>
+<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/gps_bug/cspace_scan _base_frame:=base_laser1_link"/>
 
 <node name="odom_tf" pkg="odom_tf" type="odom_tf"/>
 
