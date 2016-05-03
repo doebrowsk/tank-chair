@@ -286,6 +286,7 @@ int main(int argc, char **argv) {
     			}
     			//if no solution found, turn 90 degrees
     			if (!goalpointfound){
+
     				move(cos (1.5708)*0.01, sin(1.5708)*0.01);
                     gps_angle+=1.5708;
     			}
