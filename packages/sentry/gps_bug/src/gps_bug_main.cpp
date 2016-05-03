@@ -9,6 +9,7 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/LaserScan.h>
 #include <traj_builder/traj_builder.h>
+#include <algorithm>
 
 double dt = 0.02;
 sensor_msgs::NavSatFix last_gps;
@@ -107,6 +108,10 @@ int main(int argc, char **argv) {
     ros::Subscriber gps_sub = nh.subscribe("gps_fix_psr",1,gpscb);
     ros::Subscriber lidar_sub = nh.subscribe("gps_bug/cspace_scan",1,lidarcb);
     sensor_msgs::NavSatFix goal;
+    goal.latitude = 0;
+    goal.longitude = 1;
+    last_gps.latitude = 0;
+    last_gps.longitude = 0;
     float gps_angle= 0.0; //assume the robot is facing east at first
 
     
@@ -210,34 +215,45 @@ int main(int argc, char **argv) {
 
     //if path is blocked, follow with goal points with the best derivative
     int motion_state = 0;//0 = free 1 = left 2 = right
+    bool goalpointfound = true;
     bool done = false;
     while(!done){
     	
     	ros::spinOnce();
+        ROS_INFO("ang: %f",gps_angle);
     	//rotate towards goal
-    	float rot_ang;
-    	rot_ang = trajBuilder.min_dang(atan2(goal.latitude - last_gps.latitude,goal.longitude - last_gps.longitude)-gps_angle);
-    	move(cos (rot_ang)*0.01, sin(rot_ang)*0.01);
-    	gps_angle+=rot_ang;
-    	gps_angle = trajBuilder.min_dang(gps_angle);
+        if (goalpointfound){
+        	float rot_ang;
+        	rot_ang = trajBuilder.min_dang(atan2(goal.latitude - last_gps.latitude,goal.longitude - last_gps.longitude)-gps_angle);
+            ROS_INFO("rot %f", rot_ang);
+        	move(cos (rot_ang)*0.01, sin(rot_ang)*0.01);
+        	gps_angle+=rot_ang;
+        	gps_angle = trajBuilder.min_dang(gps_angle);
+            ROS_INFO("initial rotate");
+        }
+
 
     	ros::spinOnce();
-    	if (last_scan.ranges[90]>10){
+        int midpoint = (last_scan.angle_max-last_scan.angle_min)/last_scan.angle_increment/2.0;
+    	if (last_scan.ranges[midpoint]>10){
     		move_and_calibrate(5,0,gps_angle);
     		//move forward 5 meters
     		//calibrate gps while doing that
     		motion_state=0;
+            goalpointfound = true;
+            
     	}else{
-    		if (motion_state == 1 || (last_scan.ranges[89]>last_scan.ranges[91]&&motion_state==0)){
+    		if (motion_state == 1 || (last_scan.ranges[midpoint-1]>last_scan.ranges[midpoint+1]&&motion_state==0)){
     			motion_state =1;
     			//turn left
-    			bool goalpointfound = false;
-    			for (int i = 89; i > 0; i --){
+    			goalpointfound = false;
+    			for (int i = midpoint-1; i > 0; i --){
     				//look for a discontinuity
-    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>1.5){
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>2){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
-    					move_and_calibrate(cos(laser_scan_angle)*last_scan.ranges[i]-1,sin(laser_scan_angle)*last_scan.ranges[i]+0.5,gps_angle);
+                        float dist = std::min(5.0f,last_scan.ranges[i+1]);
+    					move_and_calibrate(cos(laser_scan_angle)*dist-1.75,sin(laser_scan_angle)*dist+1,gps_angle);
     					//goalpoint = that point - 1 meter;
     					goalpointfound = true;
     					break;
@@ -245,23 +261,26 @@ int main(int argc, char **argv) {
     			}
     			//if no solution found, turn 90 degrees
     			if (!goalpointfound){
-    				//twirl
+    				move(cos (1.5708)*0.01, sin(1.5708)*0.01);
+                    gps_angle+=1.5708;
     			}
     		}else{
     			motion_state=2;
     			bool goalpointfound = false;
-    			for (int i = 81; i < 180; i++){
-    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>1.5){
+    			for (int i = midpoint+1; i < midpoint*2-1; i++){
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>2){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
-    					move_and_calibrate(cos(laser_scan_angle)*last_scan.ranges[i]-1,sin(laser_scan_angle)*last_scan.ranges[i]-0.5,gps_angle);
-    					//goalpoint = that point - 1 meter;
+                        float dist = std::min(5.0f,last_scan.ranges[i-1]);
+    					move_and_calibrate(cos(laser_scan_angle)*dist-1.75,sin(laser_scan_angle)*dist-1,gps_angle);
+    					goalpointfound = true;
     					break;
     				}
     			}
     			//turn 90 degrees
     			if (!goalpointfound){
-    				//spin
+    				move(cos (-1.5708)*0.01, sin(-1.5708)*0.01);
+                    gps_angle-=1.5708;
     			}
     		}
     	}
