@@ -50,12 +50,16 @@ traj_builder.h
 
 Startup:
 
-turn on robot
+plug in robot
+flip circuit breaker
 turn on computer
 hit rem estop to turn on motor controller (check lights)
 
 //ssh in:
 ./login_babs.sh //only on rick's computer
+//OR
+export ROS_MASTER_URI=http://192.168.1.100:11311
+export ROS_IP=192.168.1.122 #or whatever ifconfig says your ip is
 ssh babs@192.168.1.100
 
 ./just_do_it.sh //enter password 1lmiagmc!...
@@ -74,7 +78,8 @@ ssh babs@192.168.1.100 #enter password
 
 
 
-
+//un-ssh
+logout
 
 
 
