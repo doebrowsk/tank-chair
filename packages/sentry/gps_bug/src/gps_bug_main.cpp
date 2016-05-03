@@ -7,13 +7,22 @@
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <sensor_msgs/LaserScan.h>
 #include <traj_builder/traj_builder.h>
 
 double dt = 0.02;
 sensor_msgs::NavSatFix last_gps;
+sensor_msgs::LaserScan last_scan;
+TrajBuilder trajBuilder; 
+ros::Publisher twist_commander;
 
 void gpscb(const sensor_msgs::NavSatFix& message_holder){
   last_gps = message_holder;
+}
+
+void lidarcb(const sensor_msgs::LaserScan& message_holder){
+	last_scan = message_holder;
+
 }
 
 void filter_angle_offset(float &angle, sensor_msgs::NavSatFix start, sensor_msgs::NavSatFix end){
@@ -43,111 +52,219 @@ void filter_angle_offset(float &angle, sensor_msgs::NavSatFix start, sensor_msgs
 
 	// compute a new offset angle
 	angle = atan2(y_comp, x_comp);
-	ROS_INFO("New offset angle after filter: %f", angle);
+	//ROS_INFO("New offset angle after filter: %f", angle);
+}
+
+void move(float x, float y){
+
+	std::vector<nav_msgs::Odometry> vec_of_states;
+	ros::Rate loop(1/dt);
+
+	geometry_msgs::PoseStamped start_pose;
+	geometry_msgs::PoseStamped end_pose;
+	
+
+	start_pose.pose.position.x = 0.0;
+    start_pose.pose.position.y = 0.0;
+    start_pose.pose.position.z = 0.0;
+
+    end_pose.pose.position.x = x;
+    end_pose.pose.position.y = y;
+    end_pose.pose.position.z = 0.0;
+
+    trajBuilder.build_point_and_go_traj(start_pose, end_pose, vec_of_states);
+
+	for (int i = 0; i < vec_of_states.size(); i++) {
+        
+        twist_commander.publish(vec_of_states[i].twist.twist); 
+
+        loop.sleep(); 
+    }
+
+    ros::spinOnce();
+
+}
+
+void move_and_calibrate(float x, float y, float &angle){
+
+	
+
 }
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "gps_bug");
     ros::NodeHandle nh;
-    ros::Publisher twist_commander = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    twist_commander = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     ros::Rate looprate(1 / dt);
 
     ros::Publisher des_state_publisher = nh.advertise<nav_msgs::Odometry>("/desState", 1);
     ros::Publisher des_psi_publisher = nh.advertise<std_msgs::Float64>("/desPsi", 1);
 
     ros::Subscriber gps_sub = nh.subscribe("gps_fix_psr",1,gpscb);
-
-    //CALIBRATION STUFF....................................................................................
-    float odom_offset = 0.0;
-    ros::spinOnce();
-    // set initial gps location
-    sensor_msgs::NavSatFix start_gps = last_gps;
-    TrajBuilder trajBuilder; 
-    trajBuilder.set_dt(dt);
-    trajBuilder.set_alpha_max(0.6);
-
-    geometry_msgs::Twist g_halt_twist;
-	nav_msgs::Odometry g_end_state;
-	nav_msgs::Odometry g_start_state;
-	geometry_msgs::PoseStamped g_start_pose;
-	geometry_msgs::PoseStamped g_end_pose;
-
-	double psi_start = 0.0;
-    double psi_end = 0.0; //3.0;
-    g_start_state.pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_start);
-    g_end_state = g_start_state;
-    g_end_state.pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_end);
-
-    g_start_pose.pose.position.x = 0.0;
-    g_start_pose.pose.position.y = 0.0;
-    g_start_pose.pose.position.z = 0.0;
-    g_start_pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_start);
-    g_end_pose = g_start_pose; //includes copying over twist with all zeros
-    //don't really care about orientation, since this will follow from 
-    // point-and-go trajectory; 
-    g_end_pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_end);
-    g_end_pose.pose.position.x = 5.0; //set goal coordinates
-    g_end_pose.pose.position.y = 0.0; //-4.0;
-
-    double des_psi;
-    std_msgs::Float64 psi_msg;
-    std::vector<nav_msgs::Odometry> vec_of_states;
-    //trajBuilder.build_triangular_spin_traj(g_start_pose,g_end_pose,vec_of_states);
-    //trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
-
-    nav_msgs::Odometry des_state;
-    nav_msgs::Odometry last_state;
-    geometry_msgs::PoseStamped last_pose;
+    ros::Subscriber lidar_sub = nh.subscribe("gps_bug/cspace_scan",1,lidarcb);
+    sensor_msgs::NavSatFix goal;
+    float gps_angle= 0.0; //assume the robot is facing east at first
 
     
-    ROS_INFO("calibrating heading according to GPS");
-    trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
+    trajBuilder.set_dt(dt);
+    trajBuilder.set_alpha_max(0.5);
 
-    for (int i = 0; i < vec_of_states.size(); i++) {
-        des_state = vec_of_states[i];
-        des_state.header.stamp = ros::Time::now();
-        des_state_publisher.publish(des_state);
-        des_psi = trajBuilder.convertPlanarQuat2Psi(des_state.pose.pose.orientation);
-        psi_msg.data = des_psi;
-        des_psi_publisher.publish(psi_msg);
-        twist_commander.publish(des_state.twist.twist); //FOR OPEN-LOOP CTL ONLY!
+    move(0.5,0);
+    //CALIBRATION STUFF....................................................................................
+    
+ //    ros::spinOnce();
+ //    // set initial gps location
+ //    sensor_msgs::NavSatFix start_gps = last_gps;
+ //    
 
-        looprate.sleep(); //sleep for defined sample period, then do loop again
-    }
+ //    geometry_msgs::Twist g_halt_twist;
+	// nav_msgs::Odometry g_end_state;
+	// nav_msgs::Odometry g_start_state;
+	// geometry_msgs::PoseStamped g_start_pose;
+	// geometry_msgs::PoseStamped g_end_pose;
 
-    ros::spinOnce();
-    // calibrate according to first move
-    odom_offset = atan2(last_gps.latitude-start_gps.latitude,last_gps.longitude-start_gps.longitude);
+	// double psi_start = 0.0;
+ //    double psi_end = 0.0; //3.0;
+ //    g_start_state.pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_start);
+ //    g_end_state = g_start_state;
+ //    g_end_state.pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_end);
 
-    // start second calibration
-    start_gps = last_gps;
+ //    g_start_pose.pose.position.x = 0.0;
+ //    g_start_pose.pose.position.y = 0.0;
+ //    g_start_pose.pose.position.z = 0.0;
+ //    g_start_pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_start);
+ //    g_end_pose = g_start_pose; //includes copying over twist with all zeros
+ //    //don't really care about orientation, since this will follow from 
+ //    // point-and-go trajectory; 
+ //    g_end_pose.pose.orientation = trajBuilder.convertPlanarPsi2Quaternion(psi_end);
+ //    g_end_pose.pose.position.x = 5.0; //set goal coordinates
+ //    g_end_pose.pose.position.y = 0.0; //-4.0;
 
-    last_state = vec_of_states.back();
-    last_pose.header = last_state.header;
-    last_pose.pose = last_state.pose.pose;
-    trajBuilder.build_point_and_go_traj(last_pose, g_start_pose, vec_of_states);
-    for (int i = 0; i < vec_of_states.size(); i++) {
-        des_state = vec_of_states[i];
-        des_state.header.stamp = ros::Time::now();
-        des_state_publisher.publish(des_state);
-        des_psi = trajBuilder.convertPlanarQuat2Psi(des_state.pose.pose.orientation);
-        psi_msg.data = des_psi;
-        des_psi_publisher.publish(psi_msg);
-        twist_commander.publish(des_state.twist.twist); //FOR OPEN-LOOP CTL ONLY!
-        looprate.sleep(); //sleep for defined sample period, then do loop again
-    }
-    last_state = vec_of_states.back();
-    g_start_pose.header = last_state.header;
-    g_start_pose.pose = last_state.pose.pose;
+ //    double des_psi;
+ //    std_msgs::Float64 psi_msg;
+ //    std::vector<nav_msgs::Odometry> vec_of_states;
+ //    //trajBuilder.build_triangular_spin_traj(g_start_pose,g_end_pose,vec_of_states);
+ //    //trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
 
-    // compare first calibration phase to second
-    ros::spinOnce();
-    // load initial angle offset calculated, and the second move's gps points
-    filter_angle_offset(odom_offset, start_gps, last_gps);
+ //    nav_msgs::Odometry des_state;
+ //    nav_msgs::Odometry last_state;
+ //    geometry_msgs::PoseStamped last_pose;
+
+    
+ //    ROS_INFO("calibrating heading according to GPS");
+ //    trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
+
+ //    for (int i = 0; i < vec_of_states.size(); i++) {
+ //        des_state = vec_of_states[i];
+ //        des_state.header.stamp = ros::Time::now();
+ //        des_state_publisher.publish(des_state);
+ //        des_psi = trajBuilder.convertPlanarQuat2Psi(des_state.pose.pose.orientation);
+ //        psi_msg.data = des_psi;
+ //        des_psi_publisher.publish(psi_msg);
+ //        twist_commander.publish(des_state.twist.twist); //FOR OPEN-LOOP CTL ONLY!
+
+ //        looprate.sleep(); //sleep for defined sample period, then do loop again
+ //    }
+
+ //    ros::spinOnce();
+ //    // calibrate according to first move
+ //    odom_offset = atan2(last_gps.latitude-start_gps.latitude,last_gps.longitude-start_gps.longitude);
+
+ //    // start second calibration
+ //    start_gps = last_gps;
+
+ //    last_state = vec_of_states.back();
+ //    last_pose.header = last_state.header;
+ //    last_pose.pose = last_state.pose.pose;
+ //    trajBuilder.build_point_and_go_traj(last_pose, g_start_pose, vec_of_states);
+ //    for (int i = 0; i < vec_of_states.size(); i++) {
+ //        des_state = vec_of_states[i];
+ //        des_state.header.stamp = ros::Time::now();
+ //        des_state_publisher.publish(des_state);
+ //        des_psi = trajBuilder.convertPlanarQuat2Psi(des_state.pose.pose.orientation);
+ //        psi_msg.data = des_psi;
+ //        des_psi_publisher.publish(psi_msg);
+ //        twist_commander.publish(des_state.twist.twist); //FOR OPEN-LOOP CTL ONLY!
+ //        looprate.sleep(); //sleep for defined sample period, then do loop again
+ //    }
+ //    last_state = vec_of_states.back();
+ //    g_start_pose.header = last_state.header;
+ //    g_start_pose.pose = last_state.pose.pose;
+
+ //    // compare first calibration phase to second
+ //    ros::spinOnce();
+ //    // load initial angle offset calculated, and the second move's gps points
+ //    filter_angle_offset(odom_offset, start_gps, last_gps);
+ //    start_gps = last_gps;
 
     // odom_offset now contains calibrated offset
     
     //DONE CALIBRATING............................................................................................................
 
     // run main routine
+
+    //if path to goal is clear, head straight to goal, calib gps along the way
+
+ //    //if path is blocked, follow with goal points with the best derivative
+ //    int motion_state = 0;//0 = free 1 = left 2 = right
+ //    bool done = false;
+ //    while(!done){
+    	
+ //    	ros::spinOnce();
+ //    	//rotate towards goal
+ //    	float rot_ang;
+ //    	rot_ang = trajBuilder.min_dang(atan2(goal.latitude - last_gps.latitude,goal.longitude - last_gps.longitude) gps_angle);
+ //    	move(cos (rot_ang)*0.1, sin(rot_ang)*0.1,gps_angle);
+
+ //    	ros::spinOnce
+ //    	if (last_scan.ranges[90]>10){
+ //    		move_and_calibrate(5,0,gps_angle);
+ //    		//move forward 5 meters
+ //    		//calibrate gps while doing that
+ //    		motion_state=0;
+ //    	}else{
+ //    		if (motion_state == 1 || (last_scan.ranges[89]>last_scan.ranges[91]&&motion_state==0)){
+ //    			motion_state =1;
+ //    			//turn left
+ //    			bool goalpointfound = false;
+ //    			for (int i = 89; i > 0; i --){
+ //    				//look for a discontinuity
+ //    				if (ranges[i]-ranges[i+1]>1.5){
+ //    					float laser_scan_angle = last_scan.min_angle + last_scan.angle_increment*i;
+
+ //    					move_and_calibrate(cos(laser_scan_angle)*ranges[i]-1,sin(laser_scan_angle)*ranges[i]+0.5);
+ //    					//goalpoint = that point - 1 meter;
+ //    					goalpointfound = true;
+ //    					break;
+ //    				}
+ //    			}
+ //    			//if no solution found, turn 90 degrees
+ //    			if (!goalpointfound){
+ //    				//twirl
+ //    			}
+ //    		}else{
+ //    			motion_state=2;
+ //    			bool goalpointfound = false;
+ //    			for (int i = 81; i < 180; i++){
+ //    				if (ranges[i]-ranges[i-1]>1.5){
+ //    					float laser_scan_angle = last_scan.min_angle + last_scan.angle_increment*i;
+ //    					move_and_calibrate(cos(laser_scan_angle)*ranges[i]-1,sin(laser_scan_angle)*ranges[i]-0.5);
+ //    					//goalpoint = that point - 1 meter;
+ //    					break;
+ //    				}
+ //    			}
+ //    			//turn 90 degrees
+ //    			if (!goalpointfound){
+ //    				//spin
+ //    			}
+ //    		}
+ //    	}
+
+	//     if(sqrt(pow(goal.latitude - last_gps.latitude,2)+pow(goal.longitude - last_gps.longitude,2))<0.00008){
+	//     	done = true;
+	//     }
+	// }
+
+
+
 }

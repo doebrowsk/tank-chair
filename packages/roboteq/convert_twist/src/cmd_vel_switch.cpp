@@ -6,6 +6,7 @@ ros::Publisher out;
 std_msgs::Int32 mode;
 geometry_msgs::Twist joy;
 geometry_msgs::Twist rviz;
+geometry_msgs::Twist bug;
 float LOOP_RATE = 100.0;
 
 void modecb(const std_msgs::Int32& message_holder){
@@ -23,6 +24,12 @@ void rvizcmd(const geometry_msgs::Twist& message_holder){
 	rviz = message_holder;
 
 }
+void gpscmd(const geometry_msgs::Twist& message_holder){
+
+  bug = message_holder;
+
+}
+
 
 
 int main(int argc, char **argv) {
@@ -32,6 +39,7 @@ int main(int argc, char **argv) {
     ros::Subscriber modesub= nh.subscribe("cmd_mode",1,modecb);
     ros::Subscriber joysub= nh.subscribe("joystick/cmd_vel",1,joycmd);
     ros::Subscriber rvizsub= nh.subscribe("rviz/cmd_vel",1,rvizcmd);
+    ros::Subscriber rvizsub= nh.subscribe("gps_bug/cmd_vel",1,gpscmd);
 
     
     mode.data = 0;
@@ -45,6 +53,9 @@ int main(int argc, char **argv) {
        }
        if (mode.data==1){
        		cmder.publish(rviz);
+       }
+       if (mode.data==2){
+          cmder.publish(bug);
        }
       	looprate.sleep();
 		ros::spinOnce();
