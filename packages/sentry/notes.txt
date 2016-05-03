@@ -73,37 +73,29 @@ export ROS_IP=192.168.1.122 #or whatever ifconfig says your ip is
 ssh babs@192.168.1.100 #enter password
 
 
+export ROS_IP=192.168.1.122; export ROS_MASTER_URI=http://192.168.1.100:11311
+
 //to change control mode
 ./auto_mode.sh
 
+//joystick
+./joy_mode.sh
 
+//go home
+./go_home.sh
 
 //un-ssh
 logout
 
 
 
-
-
-
 roslaunch sentry_urdf start_physical_robot.launch
-
 babs_master //to share topics
-
-
-
-
-
-
-
-
 roslaunch sentry_urdf start_rviz.launch
-
 
 
 FOR REAL ROBOT
 roslaunch sentry_urdf start_physical_robot.launch
-
 #rosrun robot_state_publisher robot_state_publisher
 #rosrun amcl_control pub_des_state_startup
 #rosrun odom_tf odom_tf
@@ -127,7 +119,10 @@ rosrun map_server map_saver -f newMap
 #luc said for filter things?
 rqt_logger_level
 
-
+//vim
+vim filename
+esc-i //to edit 
+esc:wq //to exit
 
 
 
