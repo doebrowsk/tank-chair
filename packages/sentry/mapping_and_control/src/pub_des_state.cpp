@@ -401,20 +401,24 @@ void DesStatePublisher::pub_next_state() {
 
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped) {
     
-    geometry_msgs::PoseStamped correctedPoseStamped;
+    // geometry_msgs::PoseStamped correctedPoseStamped;
 
-    ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
+    // ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
-    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
-        tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
-    }
-    else {
-        ROS_WARN("TEARS can't transform");
-    }
+    // if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+    //     tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+    // }
+    // else {
+    //     ROS_WARN("TEARS can't transform");
+    // }
 
-    ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
+    // ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
-    return correctedPoseStamped;
+    // return correctedPoseStamped;
+
+
+return uncorrectedPoseStamped;
+
 
     // double driftX = drift_correct_transform.translation.x;
     // double driftY = drift_correct_transform.translation.y;
