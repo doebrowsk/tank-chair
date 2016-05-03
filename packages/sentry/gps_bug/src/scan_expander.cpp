@@ -10,7 +10,7 @@ void scancb(const sensor_msgs::LaserScan& message_holder){
 	cspace_scan.range_min = 0;
 	for (int scantofill = 0; scantofill < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;scantofill++){
 		for (int compare = 0; compare < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;compare++){
-			float distance = message_holder.range_max;
+			float distance = 8;
 			if (compare==100) distance = 3;
 			if (distance < radius){
 				cspace_scan.ranges[scantofill]=0.0;
