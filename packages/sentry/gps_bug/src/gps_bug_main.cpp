@@ -26,7 +26,7 @@ void lidarcb(const sensor_msgs::LaserScan& message_holder){
 }
 
 void filter_angle_offset(float &angle, sensor_msgs::NavSatFix start, sensor_msgs::NavSatFix end){
-	ROS_INFO("Offset angle before filter:  %f", angle);
+	//ROS_INFO("Offset angle before filter:  %f", angle);
 
 	// linear distance covered in second gps calibration
 	// float dist = sqrt(pow(start.latitude-end.latitude,2)+pow(start.longitude-end.longitude,2));
@@ -87,7 +87,11 @@ void move(float x, float y){
 
 void move_and_calibrate(float x, float y, float &angle){
 
-	
+	ros::spinOnce();
+	sensor_msgs::NavSatFix old = last_gps;
+	move(x,y);
+	ros::spinOnce();
+	filter_angle_offset(angle,old,last_gps);
 
 }
 
@@ -109,7 +113,6 @@ int main(int argc, char **argv) {
     trajBuilder.set_dt(dt);
     trajBuilder.set_alpha_max(0.5);
 
-    move(0.5,0);
     //CALIBRATION STUFF....................................................................................
     
  //    ros::spinOnce();
@@ -205,65 +208,68 @@ int main(int argc, char **argv) {
 
     //if path to goal is clear, head straight to goal, calib gps along the way
 
- //    //if path is blocked, follow with goal points with the best derivative
- //    int motion_state = 0;//0 = free 1 = left 2 = right
- //    bool done = false;
- //    while(!done){
+    //if path is blocked, follow with goal points with the best derivative
+    int motion_state = 0;//0 = free 1 = left 2 = right
+    bool done = false;
+    while(!done){
     	
- //    	ros::spinOnce();
- //    	//rotate towards goal
- //    	float rot_ang;
- //    	rot_ang = trajBuilder.min_dang(atan2(goal.latitude - last_gps.latitude,goal.longitude - last_gps.longitude) gps_angle);
- //    	move(cos (rot_ang)*0.1, sin(rot_ang)*0.1,gps_angle);
+    	ros::spinOnce();
+    	//rotate towards goal
+    	float rot_ang;
+    	rot_ang = trajBuilder.min_dang(atan2(goal.latitude - last_gps.latitude,goal.longitude - last_gps.longitude)-gps_angle);
+    	move(cos (rot_ang)*0.01, sin(rot_ang)*0.01);
+    	gps_angle+=rot_ang;
+    	gps_angle = trajBuilder.min_dang(gps_angle);
 
- //    	ros::spinOnce
- //    	if (last_scan.ranges[90]>10){
- //    		move_and_calibrate(5,0,gps_angle);
- //    		//move forward 5 meters
- //    		//calibrate gps while doing that
- //    		motion_state=0;
- //    	}else{
- //    		if (motion_state == 1 || (last_scan.ranges[89]>last_scan.ranges[91]&&motion_state==0)){
- //    			motion_state =1;
- //    			//turn left
- //    			bool goalpointfound = false;
- //    			for (int i = 89; i > 0; i --){
- //    				//look for a discontinuity
- //    				if (ranges[i]-ranges[i+1]>1.5){
- //    					float laser_scan_angle = last_scan.min_angle + last_scan.angle_increment*i;
+    	ros::spinOnce();
+    	if (last_scan.ranges[90]>10){
+    		move_and_calibrate(5,0,gps_angle);
+    		//move forward 5 meters
+    		//calibrate gps while doing that
+    		motion_state=0;
+    	}else{
+    		if (motion_state == 1 || (last_scan.ranges[89]>last_scan.ranges[91]&&motion_state==0)){
+    			motion_state =1;
+    			//turn left
+    			bool goalpointfound = false;
+    			for (int i = 89; i > 0; i --){
+    				//look for a discontinuity
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>1.5){
+    					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
+    					gps_angle+=laser_scan_angle;
+    					move_and_calibrate(cos(laser_scan_angle)*last_scan.ranges[i]-1,sin(laser_scan_angle)*last_scan.ranges[i]+0.5,gps_angle);
+    					//goalpoint = that point - 1 meter;
+    					goalpointfound = true;
+    					break;
+    				}
+    			}
+    			//if no solution found, turn 90 degrees
+    			if (!goalpointfound){
+    				//twirl
+    			}
+    		}else{
+    			motion_state=2;
+    			bool goalpointfound = false;
+    			for (int i = 81; i < 180; i++){
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>1.5){
+    					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
+    					gps_angle+=laser_scan_angle;
+    					move_and_calibrate(cos(laser_scan_angle)*last_scan.ranges[i]-1,sin(laser_scan_angle)*last_scan.ranges[i]-0.5,gps_angle);
+    					//goalpoint = that point - 1 meter;
+    					break;
+    				}
+    			}
+    			//turn 90 degrees
+    			if (!goalpointfound){
+    				//spin
+    			}
+    		}
+    	}
 
- //    					move_and_calibrate(cos(laser_scan_angle)*ranges[i]-1,sin(laser_scan_angle)*ranges[i]+0.5);
- //    					//goalpoint = that point - 1 meter;
- //    					goalpointfound = true;
- //    					break;
- //    				}
- //    			}
- //    			//if no solution found, turn 90 degrees
- //    			if (!goalpointfound){
- //    				//twirl
- //    			}
- //    		}else{
- //    			motion_state=2;
- //    			bool goalpointfound = false;
- //    			for (int i = 81; i < 180; i++){
- //    				if (ranges[i]-ranges[i-1]>1.5){
- //    					float laser_scan_angle = last_scan.min_angle + last_scan.angle_increment*i;
- //    					move_and_calibrate(cos(laser_scan_angle)*ranges[i]-1,sin(laser_scan_angle)*ranges[i]-0.5);
- //    					//goalpoint = that point - 1 meter;
- //    					break;
- //    				}
- //    			}
- //    			//turn 90 degrees
- //    			if (!goalpointfound){
- //    				//spin
- //    			}
- //    		}
- //    	}
-
-	//     if(sqrt(pow(goal.latitude - last_gps.latitude,2)+pow(goal.longitude - last_gps.longitude,2))<0.00008){
-	//     	done = true;
-	//     }
-	// }
+	    if(sqrt(pow(goal.latitude - last_gps.latitude,2)+pow(goal.longitude - last_gps.longitude,2))<0.00008){
+	    	done = true;
+	    }
+	}
 
 
 
