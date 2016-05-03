@@ -14,6 +14,7 @@
 double dt = 0.02;
 sensor_msgs::NavSatFix last_gps;
 sensor_msgs::LaserScan last_scan;
+sensor_msgs::LaserScan real_scan;
 TrajBuilder trajBuilder; 
 ros::Publisher twist_commander;
 
@@ -23,7 +24,9 @@ void gpscb(const sensor_msgs::NavSatFix& message_holder){
 
 void lidarcb(const sensor_msgs::LaserScan& message_holder){
 	last_scan = message_holder;
-
+}
+void reallidarcb(const sensor_msgs::LaserScan& message_holder){
+	real_scan = message_holder;
 }
 
 void filter_angle_offset(float &angle, sensor_msgs::NavSatFix start, sensor_msgs::NavSatFix end){
@@ -107,6 +110,7 @@ int main(int argc, char **argv) {
 
     ros::Subscriber gps_sub = nh.subscribe("gps_fix_psr",1,gpscb);
     ros::Subscriber lidar_sub = nh.subscribe("gps_bug/cspace_scan",1,lidarcb);
+    ros::Subscriber lidar_sub2 = nh.subscribe("scan",1,reallidarcb);
     sensor_msgs::NavSatFix goal;
     goal.latitude = 41.501918;
     goal.longitude = -81.608021;
@@ -235,6 +239,18 @@ int main(int argc, char **argv) {
 
     	ros::spinOnce();
         int midpoint = (last_scan.angle_max-last_scan.angle_min)/last_scan.angle_increment/2.0;
+        if (last_scan.ranges[midpoint]<0.2){
+        	//run away from all points
+        	float xdir = 0;
+        	float ydir = 0;
+        	for (int i = 0; i < midpoint*2.0; i++){
+        		xdir -= cos(i*last_scan.angle_increment)/real_scan.ranges[i];
+        		ydir -= sin(i*last_scan.angle_increment)/real_scan.ranges[i];
+        	}
+        	float dir = atan2(ydir,xdir);
+        	gps_angle+= dir;
+        	move_and_calibrate(2*cos(dir),2*sin(dir),gps_angle);
+        }
     	if (last_scan.ranges[midpoint]>10){
     		move_and_calibrate(5,0,gps_angle);
     		//move forward 5 meters
@@ -249,11 +265,20 @@ int main(int argc, char **argv) {
     			goalpointfound = false;
     			for (int i = midpoint-1; i > 0; i --){
     				//look for a discontinuity
-    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>2){
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i+1]);
-    					move_and_calibrate(cos(laser_scan_angle)*dist-1.75,sin(laser_scan_angle)*dist+1,gps_angle);
+    					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist+1.5,gps_angle);
+    					//goalpoint = that point - 1 meter;
+    					goalpointfound = true;
+    					break;
+    				}
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3){
+    					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
+    					gps_angle+=laser_scan_angle;
+                        float dist = std::min(5.0f,last_scan.ranges[i+1]);
+    					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist,gps_angle);
     					//goalpoint = that point - 1 meter;
     					goalpointfound = true;
     					break;
@@ -268,14 +293,23 @@ int main(int argc, char **argv) {
     			motion_state=2;
     			bool goalpointfound = false;
     			for (int i = midpoint+1; i < midpoint*2-1; i++){
-    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>2){
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>3){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i-1]);
-    					move_and_calibrate(cos(laser_scan_angle)*dist-1.75,sin(laser_scan_angle)*dist-1,gps_angle);
+    					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist-1.5,gps_angle);
     					goalpointfound = true;
     					break;
     				}
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]<-3){
+    					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
+    					gps_angle+=laser_scan_angle;
+                        float dist = std::min(5.0f,last_scan.ranges[i-1]);
+    					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist,gps_angle);
+    					goalpointfound = true;
+    					break;
+    				}
+
     			}
     			//turn 90 degrees
     			if (!goalpointfound){

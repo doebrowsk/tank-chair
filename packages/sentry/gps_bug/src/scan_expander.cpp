@@ -24,9 +24,11 @@ void scancb(const sensor_msgs::LaserScan& message_holder){
 			if (cspace_range<0) ROS_INFO("dist to line neg");
 			cspace_range+= radius*(1-cos(circle_ang_size*scan_ang_diff/scan_ang_size));
 			if (cspace_range<0) ROS_INFO("total neg");
+			if (cspace_range<=0) cspace_range = 0;
 			if (cspace_range<cspace_scan.ranges[scantofill]){
 				cspace_scan.ranges[scantofill]=cspace_range;
 			}
+
 
 		}
 	}
