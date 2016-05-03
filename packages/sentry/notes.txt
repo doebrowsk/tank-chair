@@ -48,24 +48,55 @@ pub_des_state.h
 traj_builder.h
 
 
-Startup commands:
+Startup:
 
-to connect to robot on router
-export ROS_MASTER_URI=http://192.168.1.100:11311
-type ifconfig, enter ip e.g. 10.211.55.4 (inet addr)
-export ROS_IP=(ip)
-
-
-
-
-turn on robot
+plug in robot
+flip circuit breaker
 turn on computer
 hit rem estop to turn on motor controller (check lights)
-to ssh in: ./logim_babs.sh
-roslaunch just_do_it.launch //enter password 1lmiagmc!...
+
+//ssh in:
+./login_babs.sh //only on rick's computer
+//OR
+export ROS_MASTER_URI=http://192.168.1.100:11311
+export ROS_IP=192.168.1.122 #or whatever ifconfig says your ip is
+ssh babs@192.168.1.100
+
+./just_do_it.sh //enter password 1lmiagmc!...
+
+//to connect to robot on router
+export ROS_MASTER_URI=http://192.168.1.100:11311
+// or put this in bashrc:
+alias babs_master='export ROS_MASTER_URI=http://192.168.1.100:11311'
+//type ifconfig, enter ip e.g. 10.211.55.4 (inet addr)
+export ROS_IP=192.168.1.122 #or whatever ifconfig says your ip is
+ssh babs@192.168.1.100 #enter password
+
+
+//to change control mode
+./auto_mode.sh
+
+
+
+//un-ssh
+logout
+
+
+
+
+
+
 roslaunch sentry_urdf start_physical_robot.launch
 
 babs_master //to share topics
+
+
+
+
+
+
+
+
 roslaunch sentry_urdf start_rviz.launch
 
 
@@ -90,18 +121,8 @@ rqt_console
 rosrun tf tf_echo odom map
 rosrun tf view_frames
 
-
-export ROS_MASTER_URI=http://129.22.143.219:11311
-
-
 #to save
 rosrun map_server map_saver -f newMap
-
-
-
-#for point-click interface, use rviz publish point feature
-#Make subscriber that listened to /clicked_point topic, adds it to the queue
-#want clear queue and cancel current goal features
 
 #luc said for filter things?
 rqt_logger_level
