@@ -125,7 +125,7 @@ private:
     bool flushPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool popPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool appendPathQueueCB(mapping_and_control::pathRequest& request,mapping_and_control::pathResponse& response);
-    nav_msgs::Odometry get_corrected_des_state(nav_msgs::Odometry uncorrectedState);
+    geometry_msgs::PoseStamped get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped);
 
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
     void cmdModeCallback(const std_msgs::Int32& message_holder);

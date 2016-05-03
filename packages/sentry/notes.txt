@@ -1,0 +1,192 @@
+
+
+roslaunch gazebo_ros empty_world.launch
+roslaunch mobot_urdf mobot.launch
+
+roslaunch sentry_urdf empty_world.launch
+roslaunch sentry_urdf sentry.launch
+
+roslaunch mobot_urdf open_loop_squarewave_commander.launch
+
+rostopic pub cmd_vel geometry_msgs/Twist '{linear: {x: 0.5, y: 0.0, z: ←  0.0}, angular: {x: 0.0,y: 0.0,z: 0.3}}'
+
+roslaunch sentry_urdf display.launch model:='$(find sentry_urdf)/urdf/sentry.urdf'
+
+rosrun xacro xacro sentry.xacro > sentry.urdf
+
+
+
+
+
+
+SENTRY ROBOT
+
+#roslaunch sentry_urdf ground_plane_with_sentry.launch
+#rosrun mobot_pub_des_state mobot_pub_des_state_startup
+#roscd ps8
+#rosrun map_server map_server starting_pen_map.yaml 
+#rosrun amcl amcl
+#rosrun odom_tf odom_tf
+#rosrun ps8 lin_steering
+#rosrun ps8 amcl_path_client
+
+
+FOR SIMULATION
+roslaunch sentry_urdf ground_plane_with_sentry.launch
+#rosrun robot_state_publisher robot_state_publisher
+#rosrun amcl_control pub_des_state_startup
+#rosrun odom_tf odom_tf
+#rosrun amcl_control lin_steering
+#rosrun gmapping slam_gmapping scan:=/scan
+#rosrun amcl_control amcl_path_client
+
+DIFF: 
+
+params changed:
+steering_algorithm.h
+pub_des_state.h
+traj_builder.h
+
+
+Startup commands:
+
+to connect to robot on router
+export ROS_MASTER_URI=http://192.168.1.100:11311
+type ifconfig, enter ip e.g. 10.211.55.4 (inet addr)
+export ROS_IP=(ip)
+
+
+
+
+turn on robot
+turn on computer
+hit rem estop to turn on motor controller (check lights)
+to ssh in: ./logim_babs.sh
+roslaunch just_do_it.launch //enter password 1lmiagmc!...
+roslaunch sentry_urdf start_physical_robot.launch
+
+babs_master //to share topics
+roslaunch sentry_urdf start_rviz.launch
+
+
+
+FOR REAL ROBOT
+roslaunch sentry_urdf start_physical_robot.launch
+
+#rosrun robot_state_publisher robot_state_publisher
+#rosrun amcl_control pub_des_state_startup
+#rosrun odom_tf odom_tf
+#rosrun amcl_control lin_steering
+#rosrun gmapping slam_gmapping scan:=/scan
+#rosrun amcl_control amcl_path_client
+
+
+
+
+
+#for meessages published via rosinfo
+rqt_console
+
+rosrun tf tf_echo odom map
+rosrun tf view_frames
+
+
+export ROS_MASTER_URI=http://129.22.143.219:11311
+
+
+#to save
+rosrun map_server map_saver -f newMap
+
+
+
+#for point-click interface, use rviz publish point feature
+#Make subscriber that listened to /clicked_point topic, adds it to the queue
+#want clear queue and cancel current goal features
+
+#luc said for filter things?
+rqt_logger_level
+
+
+
+
+
+HW2
+roslaunch stdr_launchers server_with_map_and_gui_plus_robot.launch
+rosrun lidar_alarm lidar_alarm
+rosrun stdr_control reactive_commander
+
+
+rosrun stdr_control stdr_open_loop_commander
+
+HW3
+roslaunch stdr_launchers server_with_map_and_gui_plus_robot.launch
+rosrun example_ros_service path_client 
+rosrun example_ros_service path_service2 
+
+HW4
+roslaunch gazebo_ros empty_world.launch
+roslaunch mobot_urdf mobot_w_lidar.launch
+rosrun reactive_mobot mobot_lidar_alarm
+rosrun reactive_mobot mobot_action_server_w_fdbk 
+rosrun reactive_mobot mobot_client
+
+#rosrun example_action_server example_countdown_server
+#rosrun example_action_server timer_client
+
+#rosrun example_action_server example_action_server
+#rosrun example_action_server example_action_client
+
+HW7
+roslaunch gazebo_ros empty_world.launch
+roslaunch mobot_urdf mobot_w_lidar.launch
+rosrun lin_steering lin_steering_wrt_odom
+rosrun point_publisher point_publisher
+
+HW8
+#working out the box
+#roslaunch gazebo_ros empty_world.launch
+#roslaunch mobot_urdf mobot_startup_open_loop.launch 
+#rosrun map_server map_server starting_pen_map.yaml 
+#rosrun amcl amcl 
+#rosrun odom_tf odom_tf 
+#rosrun rh_map_client lin_steering
+#rosrun rh_map_client amcl_path_client
+
+roslaunch gazebo_ros empty_world.launch
+roslaunch mobot_urdf mobot_startup_open_loop.launch 
+roscd ps8
+rosrun map_server map_server starting_pen_map.yaml 
+roslaunch ps8 ps8.launch
+rosrun ps8 amcl_path_client
+
+HW9
+rosrun pcl_utils find_plane_pcd_file
+
+
+/home/tjp76/ros_ws/src/learning_ros/Part_3/pcd_images/coke_can.pcd
+
+#fixed frame
+camera_depth_optical_frame
+
+
+Fun steering
+roslaunch gazebo_ros empty_world.launch
+roslaunch mobot_urdf mobot_w_lidar.launch
+rosrun fun_steering mobot_gazebo_state
+rosrun fun_steering mobot_lidar
+rosrun fun_steering mobot_nl_steering
+
+
+499 RVIZ
+rosrun gmapping slam_gmapping scan:=/scan
+rosbag play mapData.bag
+rosrun rviz rviz //add a map, change the topic to "map"
+rosrun map_server map_saver -f newMap // to save
+
+global fixed frame for visualization of lidar: base_laser1_link
+Add "LaserScan" change topic to "scan" 
+
+rosrun babs_slam babslam_main
+rosbag play north_loop.bag
+rosrun rviz rviz
+

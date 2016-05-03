@@ -117,7 +117,7 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
     int npts = request.path.poses.size();
     ROS_INFO("appending path queue with %d points", npts);
     for (int i = 0; i < npts; i++) {
-        path_queue_.push(request.path.poses[i]);
+        path_queue_.push(get_corrected_des_state(request.path.poses[i]));
     }
     return true;
 }
@@ -209,7 +209,7 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
 
         while (!return_path_stack.empty()) {
             ROS_WARN("move a point from path stack to path queue");
-            path_queue_.push(return_path_stack.top());
+            path_queue_.push(get_corrected_des_state(return_path_stack.top()));
             return_path_stack.pop();
         }
     }
@@ -308,10 +308,10 @@ void DesStatePublisher::pub_next_state() {
 
             seg_end_state_ = current_state_;
             //publish whatever current state is as desired state
-            desired_state_publisher_.publish(get_corrected_des_state(current_state_));
+            desired_state_publisher_.publish(current_state_);
             break;
         case E_STOPPED: //this state must be reset by a service
-            desired_state_publisher_.publish(get_corrected_des_state(halt_state_));
+            desired_state_publisher_.publish(halt_state_);
             break;
 
         case HALTING: //e-stop service callback sets this mode
@@ -320,7 +320,7 @@ void DesStatePublisher::pub_next_state() {
         	ROS_INFO("HALTING");
             current_des_state_ = des_state_vec_[traj_pt_i_];
             current_des_state_.header.stamp = ros::Time::now();
-            desired_state_publisher_.publish(get_corrected_des_state(current_des_state_));
+            desired_state_publisher_.publish(current_des_state_);
 
             current_pose_.pose = current_des_state_.pose.pose;
             current_pose_.header = current_des_state_.header;
@@ -348,7 +348,7 @@ void DesStatePublisher::pub_next_state() {
             current_vel_state = current_des_state_;
             current_pose_.pose = current_des_state_.pose.pose;
             current_des_state_.header.stamp = ros::Time::now();
-            desired_state_publisher_.publish(get_corrected_des_state(current_des_state_));
+            desired_state_publisher_.publish(current_des_state_);
             //next three lines just for convenience--convert to heading and publish
             // for rqt_plot visualization            
             des_psi_ = trajBuilder_.convertPlanarQuat2Psi(current_pose_.pose.orientation);
@@ -381,13 +381,13 @@ void DesStatePublisher::pub_next_state() {
                 ROS_INFO("PURSUING SUBGOAL");
             } else { //no new goal? stay halted in this mode 
                 // by simply reiterating the last state sent (should have zero vel)
-                desired_state_publisher_.publish(get_corrected_des_state(seg_end_state_));
+                desired_state_publisher_.publish(seg_end_state_);
             }
             break;
 
         default: //this should not happen
             ROS_WARN("motion mode not recognized!");
-            desired_state_publisher_.publish(get_corrected_des_state(current_des_state_));
+            desired_state_publisher_.publish(current_des_state_);
             break;
     }
 
@@ -398,19 +398,14 @@ void DesStatePublisher::pub_next_state() {
 
 }
 
-nav_msgs::Odometry DesStatePublisher::get_corrected_des_state(nav_msgs::Odometry uncorrectedState) {
+geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped) {
     
-
-    geometry_msgs::PoseStamped uncorrectedStatePose;
-    uncorrectedStatePose.pose = uncorrectedState.pose.pose;
-    uncorrectedStatePose.header = uncorrectedState.header;
-
-    geometry_msgs::PoseStamped correctedStatePose;
+    geometry_msgs::PoseStamped correctedPoseStamped;
 
     //("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedStatePose.pose.position.x, uncorrectedStatePose.pose.position.y);
 
-    if (tfListener.canTransform("map","odom",uncorrectedState.header.stamp)) {
-        tfListener.transformPose("map",uncorrectedStatePose,correctedStatePose);
+    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+        tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
     }
     else {
         ROS_WARN("TEARS can't transform");
@@ -418,10 +413,7 @@ nav_msgs::Odometry DesStatePublisher::get_corrected_des_state(nav_msgs::Odometry
 
     //ROS_WARN("AFTER: x,y %f, %f", correctedStatePose.pose.position.x, correctedStatePose.pose.position.y);
 
-    nav_msgs::Odometry correctedState = uncorrectedState;
-    correctedState.pose.pose = correctedStatePose.pose;
-
-    return correctedState;
+    return correctedPoseStamped;
 
     // double driftX = drift_correct_transform.translation.x;
     // double driftY = drift_correct_transform.translation.y;
