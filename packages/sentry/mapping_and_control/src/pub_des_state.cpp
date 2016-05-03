@@ -44,9 +44,9 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
     lidar_alarm = false;
 
     //init the drift transform
-    drift_correct_transform.translation.x = 0.0;
-    drift_correct_transform.translation.y = 0.0;
-    drift_correct_transform.rotation = trajBuilder_.convertPlanarPsi2Quaternion(0.0);
+    // drift_correct_transform.translation.x = 0.0;
+    // drift_correct_transform.translation.y = 0.0;
+    // drift_correct_transform.rotation = trajBuilder_.convertPlanarPsi2Quaternion(0.0);
 
     odom_subscriber_ = nh_.subscribe("/odom", 1, &DesStatePublisher::odomCallback, this); //subscribe to odom messages
     cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
@@ -385,8 +385,8 @@ ROS_WARN("DONE 1");
                 ROS_INFO("PURSUING SUBGOAL");
             } else { //no new goal? stay halted in this mode 
                 
-
-ROS_WARN("DONE 2");
+ROS_WARN("DONE 2, current_state_ x,y = (%f,%f)", current_state_.pose.pose.position.x, current_state_.pose.pose.position.y);
+ROS_WARN("DONE 2, seg_end_state_ x,y = (%f,%f)", seg_end_state_.pose.pose.position.x, seg_end_state_.pose.pose.position.y);
 
 // by simply reiterating the last state sent (should have zero vel)
                 desired_state_publisher_.publish(seg_end_state_);

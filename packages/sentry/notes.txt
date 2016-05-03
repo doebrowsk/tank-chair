@@ -54,6 +54,9 @@ plug in robot
 flip circuit breaker
 turn on computer
 hit rem estop to turn on motor controller (check lights)
+plug ethernet into router and computer
+plug ethernet into router and antenna power thing
+plug ethernet in to antenna power thing and antenna
 
 //ssh in:
 ./login_babs.sh //only on rick's computer
@@ -77,6 +80,8 @@ export ROS_IP=192.168.1.122; export ROS_MASTER_URI=http://192.168.1.100:11311
 
 //to change control mode
 ./auto_mode.sh
+//OR
+rostopic pub /cmd_mode std_msgs/Int32 1
 
 //joystick
 ./joy_mode.sh
@@ -86,6 +91,7 @@ export ROS_IP=192.168.1.122; export ROS_MASTER_URI=http://192.168.1.100:11311
 
 //un-ssh
 logout
+
 
 
 

@@ -225,7 +225,17 @@ int main(int argc, char **argv) {
     while(!done){
     	
     	ros::spinOnce();
+<<<<<<< HEAD
     	ROS_INFO("has found goal: %d", goalpointfound);
+=======
+    	// ROS_INFO("has found goal: %s", goalpointfound.toString());
+    	if(goalpointfound) {
+    		ROS_INFO("Has found goal: TRUE");
+    	} else {
+    		ROS_INFO("Has found goal: FALSE");
+    	}
+    	
+>>>>>>> 7295f2ed831afae11911b4b47ae16af7cd073cd5
         ROS_INFO("current angle: %f",gps_angle);
     	//rotate towards goal
         if (goalpointfound){
@@ -243,7 +253,7 @@ int main(int argc, char **argv) {
 
     	ros::spinOnce();
         int midpoint = (last_scan.angle_max-last_scan.angle_min)/last_scan.angle_increment/2.0;
-        if (last_scan.ranges[midpoint]<0.2){
+        if (last_scan.ranges[midpoint]<0.5){
         	//run away from all points
         	float xdir = 0;
         	float ydir = 0;
@@ -256,7 +266,7 @@ int main(int argc, char **argv) {
         	move_and_calibrate(2*cos(dir),2*sin(dir),gps_angle);
         	ROS_INFO("run away");
         }
-    	if (last_scan.ranges[midpoint]>10){
+    	else if (last_scan.ranges[midpoint]>7.0){
     		move_and_calibrate(5,0,gps_angle);
     		//move forward 5 meters
     		//calibrate gps while doing that
@@ -264,15 +274,25 @@ int main(int argc, char **argv) {
             goalpointfound = true;
             ROS_INFO("easy case");
             
-    	}else{
+    	}
+    	// cant move forward, need to try turning
+    	else{
+    		// if currently turning left
+    		// or it is most favorable to turn left, and we were moving forward before
     		if (motion_state == 1 || (last_scan.ranges[midpoint-1]>last_scan.ranges[midpoint+1]&&motion_state==0)){
     			motion_state =1;
     			//turn left
     			ROS_INFO("turn left");
     			goalpointfound = false;
+
+    			// 
     			for (int i = midpoint-1; i > 0; i --){
     				//look for a discontinuity
+<<<<<<< HEAD
     				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3|| last_scan.ranges[i]>7){
+=======
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>1.0|| last_scan.ranges[i]>6.0){
+>>>>>>> 7295f2ed831afae11911b4b47ae16af7cd073cd5
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i+1]);
@@ -282,7 +302,7 @@ int main(int argc, char **argv) {
     					goalpointfound = true;
     					break;
     				}
-    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3){
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]<-1.0){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i+1]);
@@ -306,7 +326,11 @@ int main(int argc, char **argv) {
     			motion_state=2;
     			bool goalpointfound = false;
     			for (int i = midpoint+1; i < midpoint*2-1; i++){
+<<<<<<< HEAD
     				if (last_scan.ranges[i]-last_scan.ranges[i-1]>3|| last_scan.ranges[i]>7){
+=======
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>1.0|| last_scan.ranges[i]>6.0){
+>>>>>>> 7295f2ed831afae11911b4b47ae16af7cd073cd5
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i-1]);
@@ -315,7 +339,7 @@ int main(int argc, char **argv) {
     					goalpointfound = true;
     					break;
     				}
-    				if (last_scan.ranges[i]-last_scan.ranges[i-1]<-3){
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]<-1.0){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i-1]);
