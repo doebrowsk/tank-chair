@@ -115,7 +115,7 @@ bool DesStatePublisher::popPathQueueCB(std_srvs::TriggerRequest& request, std_sr
 bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& request, mapping_and_control::pathResponse& response) {
 
     int npts = request.path.poses.size();
-    ROS_INFO("APPENDING path queue with %d points", npts);
+    ROS_INFO("appending path queue with %d points", npts);
     for (int i = 0; i < npts; i++) {
         path_queue_.push(get_corrected_des_state(request.path.poses[i]));
     }
@@ -190,9 +190,11 @@ void DesStatePublisher::cmdModeCallback(const std_msgs::Int32& message_holder) {
             ROS_WARN("Got unexpected motion_mode_ from cmd_mode topic");
     }
     else if (message_holder.data == 0) {
+        ROS_INFO("motion_mode_ set to OFF!");
         motion_mode_ = OFF;
     }
     else if (message_holder.data == 1 && motion_mode_ == OFF) {
+        ROS_INFO("motion_mode_ set to DONE_W_SUBGOAL!");
         motion_mode_ = DONE_W_SUBGOAL;
     }
 
@@ -251,6 +253,8 @@ void DesStatePublisher::set_init_pose(double x, double y, double psi) {
 // or points can be appended to path queue w/ service append_path_
 
 void DesStatePublisher::pub_next_state() {
+
+    ROS_WARN("pub_next_state called!!!");
 
 
     //skip if in off mode

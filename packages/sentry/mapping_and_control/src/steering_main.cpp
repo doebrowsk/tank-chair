@@ -154,7 +154,7 @@ void pointClickCallback(const geometry_msgs::PointStamped& pointStamped) {
 		pose.position.y = pointStamped.point.y;
 		pose_stamped.pose = pose;
 		path_srv.request.path.poses.push_back(pose_stamped);
-		ROS_INFO("ATTEMPTING TO APPEND POINT (%f, %f) to path", pointStamped.point.x, pointStamped.point.y);
+		ROS_INFO("attempting to append point (%f, %f) to path", pointStamped.point.x, pointStamped.point.y);
 		append_client.call(path_srv);
 	}
 
