@@ -94,7 +94,7 @@ void move_and_calibrate(float x, float y, float &angle){
 int main(int argc, char **argv) {
     ros::init(argc, argv, "gps_bug");
     ros::NodeHandle nh;
-    twist_commander = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    twist_commander = nh.advertise<geometry_msgs::Twist>("gps_bug/cmd_vel", 1);
     ros::Rate looprate(1 / dt);
 
     ros::Publisher des_state_publisher = nh.advertise<nav_msgs::Odometry>("/desState", 1);
