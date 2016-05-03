@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     ros::Subscriber modesub= nh.subscribe("cmd_mode",1,modecb);
     ros::Subscriber joysub= nh.subscribe("joystick/cmd_vel",1,joycmd);
     ros::Subscriber rvizsub= nh.subscribe("rviz/cmd_vel",1,rvizcmd);
-    ros::Subscriber rvizsub= nh.subscribe("gps_bug/cmd_vel",1,gpscmd);
+    ros::Subscriber gpssub= nh.subscribe("gps_bug/cmd_vel",1,gpscmd);
 
     
     mode.data = 0;
