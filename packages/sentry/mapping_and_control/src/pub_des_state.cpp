@@ -1,3 +1,4 @@
+
 #include <mapping_and_control/pub_des_state.h>
 //ExampleRosClass::ExampleRosClass(ros::NodeHandle* nodehandle):nh_(*nodehandle)
 
@@ -404,26 +405,45 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 
     ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
-    tf::TransformListener tfListener;
+    tf::StampedTransform odom_to_map;
 
-    // if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+    //if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
     if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
 
-        ROS_WARN("EYY can transform");
-        //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
-        //tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+        bool failure = true;
+        ROS_INFO("waiting for pose transform..."); 
+        while (failure) {
+        failure = false;
+            try {
+                //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+               
+               //   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
 
-        //const std::string &target_frame, const ros::Time &target_time, const geometry_msgs::PoseStamped &pin, const std::string &fixed_frame, geometry_msgs::PoseStamped &pout)
-        
+	        tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
+
+            } catch (tf::TransformException &exception) {
+                ROS_WARN("%s; retrying lookup!!!", exception.what());
+                failure = true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+            }
+        }
+   
         ROS_WARN("transform complete");
     }
     else {
         ROS_WARN("TEARS can't transform");
     }
 
+    double x = odom_to_map.getOrigin().x();
+    double y = odom_to_map.getOrigin().y();
+//    double psi = trajBuilder_.convertPlanarQuat2Psi(odom_to_map.getRotation());
+
+    ROS_WARN("(x,y,psi) is (%f,%f)",x,y);
+
     ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
     return correctedPoseStamped;
+
 
 
 //return uncorrectedPoseStamped;
@@ -432,6 +452,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
     // double driftX = drift_correct_transform.translation.x;
     // double driftY = drift_correct_transform.translation.y;
     // double drift_psi = trajBuilder_.convertPlanarQuat2Psi(drift_correct_transform.rotation);
+
     // double stateX = uncorrectedState.pose.pose.position.x;
     // double stateY = uncorrectedState.pose.pose.position.y;
     // double state_psi = trajBuilder_.convertPlanarQuat2Psi(uncorrectedState.pose.pose.orientation);
@@ -446,5 +467,6 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 
 
     // correctedState. 
+
 
 }
