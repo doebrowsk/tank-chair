@@ -405,10 +405,17 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
     ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
     tf::TransformListener tfListener;
-    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+
+    
+
+    const std::string &target_frame, const std::string &source_frame, const ros::Time &time, const ros::Duration &timeout, const ros::Duration &polling_sleep_duration=ros::Duration(0.01), std::string *error_msg=NULL
+
+    // if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+    if (listener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
+
         ROS_WARN("EYY can transform");
-        tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
-        //tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+        //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+        tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
 
         //const std::string &target_frame, const ros::Time &target_time, const geometry_msgs::PoseStamped &pin, const std::string &fixed_frame, geometry_msgs::PoseStamped &pout)
         
