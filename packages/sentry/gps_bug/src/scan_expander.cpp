@@ -5,7 +5,7 @@
 ros::Publisher scanpub;
 
 void scancb(const sensor_msgs::LaserScan& message_holder){
-	float radius = 0.7;//expansion of each scan
+	float radius = 0.55;//expansion of each scan
 	sensor_msgs::LaserScan cspace_scan = message_holder;
 	cspace_scan.range_min = 0;
 	for (int scantofill = 0; scantofill < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;scantofill++){
