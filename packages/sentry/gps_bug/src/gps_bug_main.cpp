@@ -219,21 +219,25 @@ int main(int argc, char **argv) {
 
     //if path is blocked, follow with goal points with the best derivative
     int motion_state = 0;//0 = free 1 = left 2 = right
-    bool goalpointfound = true;
+    bool goalpointfound;
+    goalpointfound= true;
     bool done = false;
     while(!done){
     	
     	ros::spinOnce();
-        ROS_INFO("ang: %f",gps_angle);
+    	ROS_INFO("has found goal: %d", goalpointfound);
+        ROS_INFO("current angle: %f",gps_angle);
     	//rotate towards goal
         if (goalpointfound){
+        	ROS_INFO("turning towards goal");
         	float rot_ang;
         	rot_ang = trajBuilder.min_dang(atan2(goal.latitude - last_gps.latitude,goal.longitude - last_gps.longitude)-gps_angle);
             ROS_INFO("rot %f", rot_ang);
         	move(cos (rot_ang)*0.01, sin(rot_ang)*0.01);
         	gps_angle+=rot_ang;
         	gps_angle = trajBuilder.min_dang(gps_angle);
-            ROS_INFO("initial rotate");
+            //ROS_INFO("initial rotate");
+            
         }
 
 
@@ -250,6 +254,7 @@ int main(int argc, char **argv) {
         	float dir = atan2(ydir,xdir);
         	gps_angle+= dir;
         	move_and_calibrate(2*cos(dir),2*sin(dir),gps_angle);
+        	ROS_INFO("run away");
         }
     	if (last_scan.ranges[midpoint]>10){
     		move_and_calibrate(5,0,gps_angle);
@@ -257,20 +262,23 @@ int main(int argc, char **argv) {
     		//calibrate gps while doing that
     		motion_state=0;
             goalpointfound = true;
+            ROS_INFO("easy case");
             
     	}else{
     		if (motion_state == 1 || (last_scan.ranges[midpoint-1]>last_scan.ranges[midpoint+1]&&motion_state==0)){
     			motion_state =1;
     			//turn left
+    			ROS_INFO("turn left");
     			goalpointfound = false;
     			for (int i = midpoint-1; i > 0; i --){
     				//look for a discontinuity
-    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3){
+    				if (last_scan.ranges[i]-last_scan.ranges[i+1]>3|| last_scan.ranges[i]>7){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i+1]);
     					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist+1.5,gps_angle);
     					//goalpoint = that point - 1 meter;
+    					ROS_INFO("goal found");
     					goalpointfound = true;
     					break;
     				}
@@ -281,6 +289,7 @@ int main(int argc, char **argv) {
     					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist,gps_angle);
     					//goalpoint = that point - 1 meter;
     					goalpointfound = true;
+    					ROS_INFO("goal found");
     					break;
     				}
     			}
@@ -289,16 +298,20 @@ int main(int argc, char **argv) {
 
     				move(cos (1.5708)*0.01, sin(1.5708)*0.01);
                     gps_angle+=1.5708;
+                    ROS_INFO("hard left");
+                    goalpointfound=false;
     			}
     		}else{
+    			ROS_INFO("turn right");
     			motion_state=2;
     			bool goalpointfound = false;
     			for (int i = midpoint+1; i < midpoint*2-1; i++){
-    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>3){
+    				if (last_scan.ranges[i]-last_scan.ranges[i-1]>3|| last_scan.ranges[i]>7){
     					float laser_scan_angle = last_scan.angle_min + last_scan.angle_increment*i;
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i-1]);
     					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist-1.5,gps_angle);
+    					ROS_INFO("goal found");
     					goalpointfound = true;
     					break;
     				}
@@ -307,6 +320,7 @@ int main(int argc, char **argv) {
     					gps_angle+=laser_scan_angle;
                         float dist = std::min(5.0f,last_scan.ranges[i-1]);
     					move_and_calibrate(cos(laser_scan_angle)*dist-3,sin(laser_scan_angle)*dist,gps_angle);
+    					ROS_INFO("goal found");
     					goalpointfound = true;
     					break;
     				}
@@ -316,6 +330,8 @@ int main(int argc, char **argv) {
     			if (!goalpointfound){
     				move(cos (-1.5708)*0.01, sin(-1.5708)*0.01);
                     gps_angle-=1.5708;
+                    ROS_INFO("hard right");
+                    goalpointfound = false;
     			}
     		}
     	}

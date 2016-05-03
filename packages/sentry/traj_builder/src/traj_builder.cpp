@@ -188,7 +188,7 @@ void TrajBuilder::build_spin_traj(geometry_msgs::PoseStamped start_pose,
     double psi_start = convertPlanarQuat2Psi(start_pose.pose.orientation);
     double psi_end = convertPlanarQuat2Psi(end_pose.pose.orientation);
     double dpsi = min_dang(psi_end - psi_start);
-    ROS_INFO("rotational spin distance = %f", dpsi);
+    //ROS_INFO("rotational spin distance = %f", dpsi);
     double ramp_up_time = omega_max_/ alpha_max_;    
     double ramp_up_dist = 0.5 * alpha_max_ * ramp_up_time*ramp_up_time;
     //decide on triangular vs trapezoidal:
@@ -213,7 +213,7 @@ void TrajBuilder::build_travel_traj(geometry_msgs::PoseStamped start_pose,
     double dy = y_end - y_start;
     double trip_len = sqrt(dx * dx + dy * dy);
     double ramp_up_dist = 0.5 * speed_max_ * speed_max_ / alpha_max_;
-    ROS_INFO("trip len = %f", trip_len);
+    //ROS_INFO("trip len = %f", trip_len);
     if (trip_len < 2.0 * ramp_up_dist) { //length is too short for trapezoid
         build_triangular_travel_traj(start_pose, end_pose, vec_of_states);
     } else {
@@ -238,9 +238,9 @@ void TrajBuilder::build_trapezoidal_travel_traj(geometry_msgs::PoseStamped start
     double t_ramp = speed_max_ / accel_max_;
     double ramp_up_dist = 0.5 * accel_max_ * t_ramp*t_ramp;
     double cruise_distance = trip_len - 2.0 * ramp_up_dist; //distance to travel at v_max 
-    ROS_INFO("t_ramp =%f",t_ramp);
-    ROS_INFO("ramp-up dist = %f",ramp_up_dist);
-    ROS_INFO("cruise distance = %f",cruise_distance);
+    // ROS_INFO("t_ramp =%f",t_ramp);
+    // ROS_INFO("ramp-up dist = %f",ramp_up_dist);
+    // ROS_INFO("cruise distance = %f",cruise_distance);
     //start ramping up:
     nav_msgs::Odometry des_state;
     des_state.header = start_pose.header; //really, want to copy the frame_id
@@ -272,7 +272,7 @@ void TrajBuilder::build_trapezoidal_travel_traj(geometry_msgs::PoseStamped start
     des_state.twist.twist.linear.x = speed_des;
     double t_cruise = cruise_distance / speed_max_;
     int npts_cruise = round(t_cruise / dt_);
-    ROS_INFO("t_cruise = %f; npts_cruise = %d",t_cruise,npts_cruise);
+    //ROS_INFO("t_cruise = %f; npts_cruise = %d",t_cruise,npts_cruise);
     for (int i = 0; i < npts_cruise; i++) {
         //Euler one-step integration
         x_des += speed_des * dt_ * cos(psi_des);
@@ -369,7 +369,7 @@ void TrajBuilder::build_triangular_spin_traj(geometry_msgs::PoseStamped start_po
     double psi_start = convertPlanarQuat2Psi(start_pose.pose.orientation);
     double psi_end = convertPlanarQuat2Psi(end_pose.pose.orientation);
     double dpsi = min_dang(psi_end - psi_start);
-    ROS_INFO("spin traj: psi_start = %f; psi_end = %f; dpsi= %f", psi_start, psi_end, dpsi);
+    //ROS_INFO("spin traj: psi_start = %f; psi_end = %f; dpsi= %f", psi_start, psi_end, dpsi);
     double t_ramp = sqrt(fabs(dpsi) / alpha_max_);
     int npts_ramp = round(t_ramp / dt_);
     double psi_des = psi_start; //start from here
@@ -405,7 +405,7 @@ void TrajBuilder::build_triangular_spin_traj(geometry_msgs::PoseStamped start_po
 //compute trajectory corresponding to applying max prudent decel to halt
 void TrajBuilder::build_braking_traj(geometry_msgs::PoseStamped start_pose,
         std::vector<nav_msgs::Odometry> &vec_of_states,nav_msgs::Odometry current_vel_states) {
-    ROS_INFO("We're building a braking trajectory now...");
+    //ROS_INFO("We're building a braking trajectory now...");
     nav_msgs::Odometry des_state;
     des_state.header = start_pose.header; //really, want to copy the frame_id
     des_state.pose.pose = start_pose.pose; //start from here
@@ -467,11 +467,11 @@ void TrajBuilder::build_braking_traj(geometry_msgs::PoseStamped start_pose,
 void TrajBuilder::build_point_and_go_traj(geometry_msgs::PoseStamped start_pose,
         geometry_msgs::PoseStamped end_pose,
         std::vector<nav_msgs::Odometry> &vec_of_states) {
-    ROS_INFO("building point-and-go trajectory");
+    //ROS_INFO("building point-and-go trajectory");
     nav_msgs::Odometry bridge_state;
     geometry_msgs::PoseStamped bridge_pose; //bridge end of prev traj to start of new traj
     vec_of_states.clear(); //get ready to build a new trajectory of desired states
-    ROS_INFO("building rotational trajectory");
+    //ROS_INFO("building rotational trajectory");
     double x_start = start_pose.pose.position.x;
     double y_start = start_pose.pose.position.y;
     double x_end = end_pose.pose.position.x;
@@ -479,15 +479,15 @@ void TrajBuilder::build_point_and_go_traj(geometry_msgs::PoseStamped start_pose,
     double dx = x_end - x_start;
     double dy = y_end - y_start;
     double des_psi = atan2(dy, dx); //heading to point towards goal pose
-    ROS_INFO("desired heading to subgoal = %f", des_psi);
+    //ROS_INFO("desired heading to subgoal = %f", des_psi);
     //bridge pose: state of robot with start_x, start_y, but pointing at next subgoal
     //  achieve this pose with a spin move before proceeding to subgoal with translational
     //  motion
     bridge_pose = start_pose;
     bridge_pose.pose.orientation = convertPlanarPsi2Quaternion(des_psi);
-    ROS_INFO("building reorientation trajectory");
+    //ROS_INFO("building reorientation trajectory");
     build_spin_traj(start_pose, bridge_pose, vec_of_states); //build trajectory to reorient
     //start next segment where previous segment left off
-    ROS_INFO("building translational trajectory");
+    //ROS_INFO("building translational trajectory");
     build_travel_traj(bridge_pose, end_pose, vec_of_states);
 }
