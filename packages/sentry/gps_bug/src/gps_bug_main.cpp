@@ -108,10 +108,10 @@ int main(int argc, char **argv) {
     ros::Subscriber gps_sub = nh.subscribe("gps_fix_psr",1,gpscb);
     ros::Subscriber lidar_sub = nh.subscribe("gps_bug/cspace_scan",1,lidarcb);
     sensor_msgs::NavSatFix goal;
-    goal.latitude = 0;
-    goal.longitude = 1;
-    last_gps.latitude = 0;
-    last_gps.longitude = 0;
+    goal.latitude = 41.501918;
+    goal.longitude = -81.608021;
+    //last_gps.latitude = 0;
+    //last_gps.longitude = 0;
     float gps_angle= 0.0; //assume the robot is facing east at first
 
     
@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
     		}
     	}
 
-	    if(sqrt(pow(goal.latitude - last_gps.latitude,2)+pow(goal.longitude - last_gps.longitude,2))<0.00008){
+	    if(sqrt(pow(goal.latitude - last_gps.latitude,2)+pow(goal.longitude - last_gps.longitude,2))<0.00009){
 	    	done = true;
 	    }
 	}
