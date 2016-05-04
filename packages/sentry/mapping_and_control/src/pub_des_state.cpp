@@ -416,6 +416,10 @@ void DesStatePublisher::pub_next_state() {
 
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped, bool toMap) {
 
+	double x = odom_to_map.getOrigin().x();
+	double y = odom_to_map.getOrigin().y();
+	double psi = odom_to_map.getRotation().getAngle();
+
 	double now = ros::Time::now().toSec();
 
 	if (now - lastUpdate > 5.0) {
@@ -426,7 +430,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 		if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
 
 			bool failure = true;
-			ROS_INFO("waiting for pose transform...");
+			ROS_INFO("EYYY can transform, waiting for pose transform...");
 			while (failure) {
 				failure = false;
 				try {
@@ -447,15 +451,16 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 			ROS_WARN("TEARS can't transform");
 		}
 
+		x = odom_to_map.getOrigin().x();
+		y = odom_to_map.getOrigin().y();
+		psi = odom_to_map.getRotation().getAngle();
+
+		ROS_INFO("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
+
 		now = ros::Time::now().toSec();
 		lastUpdate = now;
 	}
 
-	double x = odom_to_map.getOrigin().x();
-	double y = odom_to_map.getOrigin().y();
-	double psi = odom_to_map.getRotation().getAngle();
-
-	ROS_INFO("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
 
 	geometry_msgs::PoseStamped correctedPoseStamped = uncorrectedPoseStamped;
 
@@ -472,7 +477,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi - psi);
 	}
 
-	ROS_INFO("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
+	//ROS_INFO("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
 	return correctedPoseStamped;
 
