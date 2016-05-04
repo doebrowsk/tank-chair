@@ -213,6 +213,9 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
             ROS_WARN("move a point from path stack to path queue");
             path_queue_.push(get_corrected_des_state(return_path_stack.top()));
             return_path_stack.pop();
+            
+            
+
         }
     }
     else {
@@ -372,7 +375,7 @@ void DesStatePublisher::pub_next_state() {
             //it to compute a new trajectory and change motion mode
             if (!path_queue_.empty()) {
 
-ROS_WARN("DONE 1");
+//ROS_WARN("DONE 1");
 
                 int n_path_pts = path_queue_.size();
                 ROS_WARN("%d points in path queue", n_path_pts);
@@ -385,8 +388,8 @@ ROS_WARN("DONE 1");
                 ROS_INFO("PURSUING SUBGOAL");
             } else { //no new goal? stay halted in this mode 
                 
-ROS_WARN("DONE 2, current_state_ x,y = (%f,%f)", current_state_.pose.pose.position.x, current_state_.pose.pose.position.y);
-ROS_WARN("DONE 2, seg_end_state_ x,y = (%f,%f)", seg_end_state_.pose.pose.position.x, seg_end_state_.pose.pose.position.y);
+//ROS_WARN("DONE 2, current_state_ x,y = (%f,%f)", current_state_.pose.pose.position.x, current_state_.pose.pose.position.y);
+//ROS_WARN("DONE 2, seg_end_state_ x,y = (%f,%f)", seg_end_state_.pose.pose.position.x, seg_end_state_.pose.pose.position.y);
 
 // by simply reiterating the last state sent (should have zero vel)
                 desired_state_publisher_.publish(seg_end_state_);
@@ -412,53 +415,53 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 
     tf::StampedTransform odom_to_map;
 
-    //if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
-//    if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
+//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+    if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
 
-  //      bool failure = true;
-    //    ROS_INFO("waiting for pose transform..."); 
-    //    while (failure) {
-    //        failure = false;
-    //        try {
-    //            //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+        bool failure = true;
+        ROS_INFO("waiting for pose transform..."); 
+        while (failure) {
+            failure = false;
+            try {
+                //tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
                
-    //           //   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+               //   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
 
-//	        tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
+	        tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
 
-  //          } catch (tf::TransformException &exception) {
-    //            ROS_WARN("%s; retrying lookup!!!", exception.what());
-    //            failure = true;
-    //            ros::Duration(0.5).sleep(); // sleep for half a second
-    //        }
-    //    }
+            } catch (tf::TransformException &exception) {
+                ROS_WARN("%s; retrying lookup!!!", exception.what());
+                failure = true;
+                ros::Duration(0.5).sleep(); // sleep for half a second
+            }
+        }
    
-  //      ROS_WARN("transform complete");
-  //  }
-  //  else {
-  //      ROS_WARN("TEARS can't transform");
-  //  }
+        ROS_WARN("transform complete");
+    }
+    else {
+        ROS_WARN("TEARS can't transform");
+    }
 
-  //  double x = odom_to_map.getOrigin().x();
-  //  double y = odom_to_map.getOrigin().y();
-  //  double psi = odom_to_map.getRotation().getAngle();
+    double x = odom_to_map.getOrigin().x();
+    double y = odom_to_map.getOrigin().y();
+    double psi = odom_to_map.getRotation().getAngle();
 
-  //  ROS_WARN("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
+    ROS_WARN("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
 
-  //  geometry_msgs::PoseStamped correctedPoseStamped = uncorrectedPoseStamped;
+    geometry_msgs::PoseStamped correctedPoseStamped = uncorrectedPoseStamped;
 
-  //  correctedPoseStamped.pose.position.x += x;
-  //  correctedPoseStamped.pose.position.y += y;
-  //  double ogPsi = trajBuilder_.convertPlanarQuat2Psi(correctedPoseStamped.pose.orientation);
-  //  correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
+    correctedPoseStamped.pose.position.x += x;
+    correctedPoseStamped.pose.position.y += y;
+    double ogPsi = trajBuilder_.convertPlanarQuat2Psi(correctedPoseStamped.pose.orientation);
+    correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
 
-  //  ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
+    ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
-  //  return correctedPoseStamped;
+    return correctedPoseStamped;
 
 
 
-return uncorrectedPoseStamped;
+//return uncorrectedPoseStamped;
 
 
     // double driftX = drift_correct_transform.translation.x;
