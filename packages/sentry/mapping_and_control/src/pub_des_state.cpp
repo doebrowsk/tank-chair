@@ -162,7 +162,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 	else {
 		//only add a point if we've moved at least return_path_point_spacing meter
 		//and our heading is different by at least
-		geometry_msgs::PoseStamped topPoseInStack = get_corrected_des_state(return_path_stack.top(),false);
+		geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top()//get_corrected_des_state(return_path_stack.top(),false);
 
 		double currentX = current_state_.pose.pose.position.x;
 		double currentY = current_state_.pose.pose.position.y;
@@ -413,7 +413,7 @@ void DesStatePublisher::pub_next_state() {
 
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped, bool toMap) {
 
-	ROS_WARN("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
+	ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
 	tf::StampedTransform odom_to_map;
 
@@ -437,8 +437,6 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 				ros::Duration(0.5).sleep(); // sleep for half a second
 			}
 		}
-
-		ROS_WARN("transform complete");
 	}
 	else {
 		ROS_WARN("TEARS can't transform");
@@ -448,7 +446,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 	double y = odom_to_map.getOrigin().y();
 	double psi = odom_to_map.getRotation().getAngle();
 
-	ROS_WARN("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
+	ROS_INFO("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
 
 	geometry_msgs::PoseStamped correctedPoseStamped = uncorrectedPoseStamped;
 
@@ -465,7 +463,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi - psi);
 	}
 
-	ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
+	ROS_INFO("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
 	return correctedPoseStamped;
 
