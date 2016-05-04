@@ -52,6 +52,9 @@ DesStatePublisher::DesStatePublisher(ros::NodeHandle& nh) : nh_(nh) {
 	cmd_mode_subscriber_ = nh_.subscribe("/cmd_mode", 1, &DesStatePublisher::cmdModeCallback, this);
 	go_home_subscriber_ = nh_.subscribe("/go_home", 1, &DesStatePublisher::goHomeRobotYoureDrunk, this);
 	// tf_subscriber_ = nh_.subscribe("/tf", 1, &DesStatePublisher::tfCallback, this);
+
+	lastUpdate = -10;
+
 }
 
 void DesStatePublisher::initializeServices() {
@@ -414,8 +417,6 @@ void DesStatePublisher::pub_next_state() {
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped, bool toMap) {
 
 	double now = ros::Time::now().toSec();
-
-	ROS_WARN("now - lastUpdate: %f", now - lastUpdate);
 
 	if (now - lastUpdate > 5.0) {
 
