@@ -127,7 +127,7 @@ private:
     bool appendPathQueueCB(mapping_and_control::pathRequest& request,mapping_and_control::pathResponse& response);
 
     //toMap is true if you want to convert from odom to map, false if want map to odom
-    geometry_msgs::PoseStamped get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped,, bool toMap);
+    geometry_msgs::PoseStamped get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped, bool toMap);
 
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
     void cmdModeCallback(const std_msgs::Int32& message_holder);
