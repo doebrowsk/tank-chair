@@ -1,5 +1,5 @@
 // Probabilistic Roadmap Algorithm
-#include "prm.cpp"
+#include "wf.cpp"
 //// Testing Code
 
 void testGraph() {
@@ -260,9 +260,13 @@ void testEverything(ProbRoadmap p) {
     std::cout << "Failure rate: " << failurePercentage << "\n";
 }
 
+
+
 int main() {
     srand (time(NULL));
     
+    // PRM
+    /*
     ProbRoadmap p;
 
     // set map
@@ -286,6 +290,21 @@ int main() {
         path = p.optimizePath(path);
         printPathInfo(path);
     }
+    */
+    // Wavefront
+    
+    Wavefront w;
+    // set map
+    std::vector<std::vector<int> > map = createMap2();
+    //std::vector<std::vector<int> > map = std::vector<std::vector<int> >(4, std::vector<int>(4, 0));
+    //map[1][1]=1;
+    w.setMap(map);
+    w.constructPlan(Point(55, 25));
+    std::cout<<"Plan constructed\n";
+    std::vector<Point> path = w.getPath(Point(5,5));
+    path = w.optimizePath(path);
+    printPathForPython(path);
+    printPathInfo(path);
     
     //testEverything(p);
     //testGraph();

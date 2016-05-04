@@ -50,33 +50,57 @@ traj_builder.h
 
 Startup:
 
+
 plug in robot
 flip circuit breaker
 turn on computer
 hit rem estop to turn on motor controller (check lights)
 
-//ssh in:
+
+
+plug ethernet into router and antenna power thing
+plug ethernet in to antenna power thing and antenna
+
+{
+plug ethernet into router and computer
+//OR
+from mac connect to router dd-wrt
+in advanced wifi settings, in TCP/IP, change ip to 192.168.1.102
+(use dhcp with manual address)
+}
+
+{
 ./login_babs.sh //only on rick's computer
 //OR
 export ROS_MASTER_URI=http://192.168.1.100:11311
-export ROS_IP=192.168.1.122 #or whatever ifconfig says your ip is
-ssh babs@192.168.1.100
-
-./just_do_it.sh //enter password 1lmiagmc!...
-
-//to connect to robot on router
-export ROS_MASTER_URI=http://192.168.1.100:11311
-// or put this in bashrc:
+// OR put this in bashrc:
 alias babs_master='export ROS_MASTER_URI=http://192.168.1.100:11311'
-//type ifconfig, enter ip e.g. 10.211.55.4 (inet addr)
-export ROS_IP=192.168.1.122 #or whatever ifconfig says your ip is
-ssh babs@192.168.1.100 #enter password
+}
 
+export ROS_IP=(inet addr) #or whatever ifconfig says your ip is
 
-export ROS_IP=192.168.1.122; export ROS_MASTER_URI=http://192.168.1.100:11311
+//both in one command:
+export ROS_IP=10.211.55.4; export ROS_MASTER_URI=http://192.168.1.100:11311; ssh babs@192.168.1.100
 
+ssh babs@192.168.1.100 //ping 192.168.1.100 if necessary
+
+{
+./just_do_it.sh //enter password 1lmiagmc!...
+//restart until rostopic echo odom shows changes
+}
+
+roslaunch sentry_urdf legacy.launch
+
+{
 //to change control mode
 ./auto_mode.sh
+//OR
+rostopic pub /cmd_mode std_msgs/Int32 1
+}
+
+roslaunch sentry_urdf start_rviz.launch
+
+
 
 //joystick
 ./joy_mode.sh
@@ -86,6 +110,7 @@ export ROS_IP=192.168.1.122; export ROS_MASTER_URI=http://192.168.1.100:11311
 
 //un-ssh
 logout
+
 
 
 
