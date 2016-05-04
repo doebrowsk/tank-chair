@@ -125,7 +125,9 @@ private:
     bool flushPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool popPathQueueCB(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
     bool appendPathQueueCB(mapping_and_control::pathRequest& request,mapping_and_control::pathResponse& response);
-    geometry_msgs::PoseStamped get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped);
+
+    //toMap is true if you want to convert from odom to map, false if want map to odom
+    geometry_msgs::PoseStamped get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped,, bool toMap);
 
     void odomCallback(const nav_msgs::Odometry& odom_rcvd);
     void cmdModeCallback(const std_msgs::Int32& message_holder);

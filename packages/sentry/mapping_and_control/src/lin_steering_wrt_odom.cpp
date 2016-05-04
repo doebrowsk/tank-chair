@@ -107,32 +107,6 @@ void SteeringController::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 	// copy some of the components of the received message into member vars
 	// we care about speed and spin, as well as position estimates x,y and heading
 
-
-
-
-	// geometry_msgs::PoseStamped uncorrectedStatePose;
- //    uncorrectedStatePose.pose = odom_rcvd.pose.pose;
- //    uncorrectedStatePose.header = odom_rcvd.header;
-
- //    geometry_msgs::PoseStamped correctedStatePose;
-
- //    ROS_WARN("LIN TRYING TO CORRECT... x,y before: %f, %f", uncorrectedStatePose.pose.position.x, uncorrectedStatePose.pose.position.y);
-
- //    if (tfListener.canTransform("map","odom",odom_rcvd.header.stamp)) {
- //        tfListener.transformPose("map",uncorrectedStatePose,correctedStatePose);
- //    }
- //    else {
- //        ROS_WARN("LIN TEARS can't transform");
- //    }
-
- //    ROS_WARN("LIN AFTER: x,y %f, %f", correctedStatePose.pose.position.x, correctedStatePose.pose.position.y);
-
- //    nav_msgs::Odometry correctedState = odom_rcvd;
- //    correctedState.pose.pose = correctedStatePose.pose;
-
-
-
-
 	current_odom_ = odom_rcvd;
 
 	odom_pose_ = current_odom_.pose.pose;
