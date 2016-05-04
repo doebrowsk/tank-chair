@@ -79,7 +79,7 @@ alias babs_master='export ROS_MASTER_URI=http://192.168.1.100:11311'
 
 export ROS_IP=(inet addr) #or whatever ifconfig says your ip is
 
-//both in one command:
+//convenience:
 export ROS_IP=10.211.55.4; export ROS_MASTER_URI=http://192.168.1.100:11311; ssh babs@192.168.1.100
 
 ssh babs@192.168.1.100 //ping 192.168.1.100 if necessary
@@ -111,6 +111,8 @@ roslaunch sentry_urdf start_rviz.launch
 //un-ssh
 logout
 
+//for teleop
+rosrun sentry_teleop sentry_joy
 
 
 
