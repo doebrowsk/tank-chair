@@ -179,7 +179,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 
         if (dist >= return_path_point_spacing && psiDiff >= return_path_delta_phi) {
             ROS_INFO("return_path_stack got a point");
-            return_path_stack.push(poseToAdd);
+            return_path_stack.push(get_corrected_des_state(poseToAdd));
         }
     }
 }
@@ -210,12 +210,14 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
         }
 
         while (!return_path_stack.empty()) {
-            ROS_WARN("move a point from path stack to path queue");
-            path_queue_.push(get_corrected_des_state(return_path_stack.top()));
+
+            geometry_msgs::PoseStamped top = return_path_stack.top();
+
+            ROS_WARN("moved (%f,%f) from path stack to path queue",top.pose.position.x,top.pose.position.y);
+
+            path_queue_.push(top);
             return_path_stack.pop();
             
-            
-
         }
     }
     else {

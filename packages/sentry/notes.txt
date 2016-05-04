@@ -50,6 +50,7 @@ traj_builder.h
 
 Startup:
 
+
 plug in robot
 flip circuit breaker
 turn on computer
@@ -65,9 +66,7 @@ plug ethernet into router and computer
 //OR
 from mac connect to router dd-wrt
 in advanced wifi settings, in TCP/IP, change ip to 192.168.1.102
-possibly change these:
-subnet mask 255.255.255.0
-router 192.168.1.1
+(use dhcp with manual address)
 }
 
 {
@@ -81,11 +80,14 @@ alias babs_master='export ROS_MASTER_URI=http://192.168.1.100:11311'
 export ROS_IP=(inet addr) #or whatever ifconfig says your ip is
 
 //both in one command:
-export ROS_IP=10.211.55.4; export ROS_MASTER_URI=http://192.168.1.100:11311
+export ROS_IP=10.211.55.4; export ROS_MASTER_URI=http://192.168.1.100:11311; ssh babs@192.168.1.100
 
 ssh babs@192.168.1.100 //ping 192.168.1.100 if necessary
 
+{
 ./just_do_it.sh //enter password 1lmiagmc!...
+//restart until rostopic echo odom shows changes
+}
 
 roslaunch sentry_urdf legacy.launch
 
