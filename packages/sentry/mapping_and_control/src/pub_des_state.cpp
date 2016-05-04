@@ -452,10 +452,10 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 
     geometry_msgs::PoseStamped correctedPoseStamped = uncorrectedPoseStamped;
 
-    correctedPoseStamped.pose.position.x += x;
-    correctedPoseStamped.pose.position.y += y;
+    correctedPoseStamped.pose.position.x -= x;
+    correctedPoseStamped.pose.position.y -= y;
     double ogPsi = trajBuilder_.convertPlanarQuat2Psi(correctedPoseStamped.pose.orientation);
-    correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
+    correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi - psi);
 
     ROS_WARN("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
 
