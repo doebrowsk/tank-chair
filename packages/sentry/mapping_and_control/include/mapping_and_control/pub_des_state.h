@@ -101,6 +101,11 @@ private:
     ros::Publisher des_psi_publisher_;
     ros::Publisher motion_mode_publisher_;
     
+    //last time we got a transform
+    double lastUpdate;
+
+	tf::StampedTransform odom_to_map;
+
     //a trajectory-builder object; 
     TrajBuilder trajBuilder_; 
 

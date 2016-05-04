@@ -162,7 +162,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 	else {
 		//only add a point if we've moved at least return_path_point_spacing meter
 		//and our heading is different by at least
-		geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();//get_corrected_des_state(return_path_stack.top(),false);
+		geometry_msgs::PoseStamped topPoseInStack = get_corrected_des_state(return_path_stack.top(),false);
 
 		double currentX = current_state_.pose.pose.position.x;
 		double currentY = current_state_.pose.pose.position.y;
@@ -380,7 +380,7 @@ void DesStatePublisher::pub_next_state() {
 			//ROS_WARN("DONE 1");
 
 			int n_path_pts = path_queue_.size();
-			ROS_WARN("%d points in path queue", n_path_pts);
+			ROS_INFO("%d points in path queue", n_path_pts);
 			start_pose_ = current_pose_;
 			end_pose_ = get_corrected_des_state(path_queue_.front(),false);
 			trajBuilder_.build_point_and_go_traj(start_pose_, end_pose_, des_state_vec_);
@@ -413,33 +413,41 @@ void DesStatePublisher::pub_next_state() {
 
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped, bool toMap) {
 
-	ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
+	double now = ros::Time::now().toSec();
 
-	tf::StampedTransform odom_to_map;
+	ROS_WARN("now - lastUpdate: %f", now - lastUpdate);
 
-	//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
-	if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
+	if (now - lastUpdate > 5.0) {
 
-		bool failure = true;
-		ROS_INFO("waiting for pose transform...");
-		while (failure) {
-			failure = false;
-			try {
-				//tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+		ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
-				//   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+		//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+		if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
 
-				tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
+			bool failure = true;
+			ROS_INFO("waiting for pose transform...");
+			while (failure) {
+				failure = false;
+				try {
+					//tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
 
-			} catch (tf::TransformException &exception) {
-				ROS_WARN("%s; retrying lookup!!!", exception.what());
-				failure = true;
-				ros::Duration(0.5).sleep(); // sleep for half a second
+					//   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+
+					tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
+
+				} catch (tf::TransformException &exception) {
+					ROS_WARN("%s; retrying lookup!!!", exception.what());
+					failure = true;
+					ros::Duration(0.5).sleep(); // sleep for half a second
+				}
 			}
 		}
-	}
-	else {
-		ROS_WARN("TEARS can't transform");
+		else {
+			ROS_WARN("TEARS can't transform");
+		}
+
+		now = ros::Time::now().toSec();
+		lastUpdate = now;
 	}
 
 	double x = odom_to_map.getOrigin().x();
