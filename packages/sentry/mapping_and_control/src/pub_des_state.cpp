@@ -162,7 +162,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 	else {
 		//only add a point if we've moved at least return_path_point_spacing meter
 		//and our heading is different by at least
-		geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top()//get_corrected_des_state(return_path_stack.top(),false);
+		geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();//get_corrected_des_state(return_path_stack.top(),false);
 
 		double currentX = current_state_.pose.pose.position.x;
 		double currentY = current_state_.pose.pose.position.y;
