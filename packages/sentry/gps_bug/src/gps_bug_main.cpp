@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
     	} else {
     		ROS_INFO("Has found goal: FALSE");
     	}
-    	
+
         ROS_INFO("current angle: %f",gps_angle);
     	//rotate towards goal
         if (goalpointfound){
@@ -250,16 +250,16 @@ int main(int argc, char **argv) {
     	ros::spinOnce();
         int midpoint = (last_scan.angle_max-last_scan.angle_min)/last_scan.angle_increment/2.0;
         if (last_scan.ranges[midpoint]<0.5){
-        	//run away from all points
-        	float xdir = 0;
-        	float ydir = 0;
-        	for (int i = 0; i < midpoint*2.0; i++){
-        		xdir -= cos(i*last_scan.angle_increment)/real_scan.ranges[i];
-        		ydir -= sin(i*last_scan.angle_increment)/real_scan.ranges[i];
-        	}
-        	float dir = atan2(ydir,xdir);
-        	gps_angle+= dir;
-        	move_and_calibrate(2*cos(dir),2*sin(dir),gps_angle);
+        	// //run away from all points
+        	// float xdir = 0;
+        	// float ydir = 0;
+        	// for (int i = 0; i < midpoint*2.0; i++){
+        	// 	xdir -= cos(i*last_scan.angle_increment)/real_scan.ranges[i];
+        	// 	ydir -= sin(i*last_scan.angle_increment)/real_scan.ranges[i];
+        	// }
+        	// float dir = atan2(ydir,xdir);
+        	gps_angle+= 3.14159;
+        	move_and_calibrate(-3,0,gps_angle);
         	ROS_INFO("run away");
         }
     	else if (last_scan.ranges[midpoint]>7.0){
