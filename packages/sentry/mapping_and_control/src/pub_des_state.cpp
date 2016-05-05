@@ -373,8 +373,6 @@ void DesStatePublisher::pub_next_state() {
 		//see if there is another subgoal is in queue; if so, use
 		//it to compute a new trajectory and change motion mode
 
-		updateTransform();
-
 		if (return_path_stack.empty()) {
 			ROS_INFO("return_path_stack got its first point");
 			geometry_msgs::PoseStamped poseToAdd;
@@ -384,6 +382,7 @@ void DesStatePublisher::pub_next_state() {
 		}
 
 		if (!path_queue_.empty()) {
+			updateTransform();
 
 			//ROS_WARN("DONE 1");
 
