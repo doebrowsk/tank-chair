@@ -120,7 +120,19 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
 	int npts = request.path.poses.size();
 	ROS_INFO("appending path queue with %d points", npts);
 	for (int i = 0; i < npts; i++) {
-		path_queue_.push(request.path.poses[i]); //should be coming in as map coordinates already
+
+
+
+
+
+		//get_corrected_des_state UNDO THIS!!!
+
+
+
+
+
+		path_queue_.push(get_corrected_des_state(request.path.poses[i], false)); //should be coming in as map coordinates already
+
 	}
 	return true;
 }
@@ -160,12 +172,16 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 
 	if (return_path_stack.empty()) {
 		ROS_INFO("return_path_stack got its first point");
-		return_path_stack.push(get_corrected_des_state(poseToAdd,true));
+		//return_path_stack.push(get_corrected_des_state(poseToAdd,true));
+		return_path_stack.push(poseToAdd);
+
 	}
 	else {
 		//only add a point if we've moved at least return_path_point_spacing meter
 		//and our heading is different by at least
-		geometry_msgs::PoseStamped topPoseInStack = get_corrected_des_state(return_path_stack.top(),false);
+
+//		geometry_msgs::PoseStamped topPoseInStack = get_corrected_des_state(return_path_stack.top(),false);
+		geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();
 
 		double currentX = current_state_.pose.pose.position.x;
 		double currentY = current_state_.pose.pose.position.y;
@@ -182,7 +198,8 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 
 		if (dist >= return_path_point_spacing && psiDiff >= return_path_delta_phi) {
 			ROS_INFO("return_path_stack got a point");
-			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
+//			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
+			return_path_stack.push(poseToAdd);
 		}
 	}
 }
@@ -385,7 +402,7 @@ void DesStatePublisher::pub_next_state() {
 			int n_path_pts = path_queue_.size();
 			ROS_INFO("%d points in path queue", n_path_pts);
 			start_pose_ = current_pose_;
-			end_pose_ = get_corrected_des_state(path_queue_.front(),false);
+			end_pose_ = path_queue_.front();
 			trajBuilder_.build_point_and_go_traj(start_pose_, end_pose_, des_state_vec_);
 			traj_pt_i_ = 0;
 			npts_traj_ = des_state_vec_.size();
@@ -424,7 +441,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 
 	if (now - lastUpdate > 5.0) {
 
-		ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
+		//ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
 		//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
 		if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
