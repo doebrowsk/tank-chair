@@ -196,7 +196,7 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 
 		//ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
 
-		if (dist >= return_path_point_spacing && psiDiff >= return_path_delta_phi) {
+		if (dist >= return_path_point_spacing || psiDiff >= return_path_delta_phi) {
 			ROS_INFO("return_path_stack got a point");
 //			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
 			return_path_stack.push(poseToAdd);
@@ -402,7 +402,11 @@ void DesStatePublisher::pub_next_state() {
 			int n_path_pts = path_queue_.size();
 			ROS_INFO("%d points in path queue", n_path_pts);
 			start_pose_ = current_pose_;
+
+			//end_pose_ = get_corrected_des_state(path_queue_.front(),false);
 			end_pose_ = path_queue_.front();
+
+
 			trajBuilder_.build_point_and_go_traj(start_pose_, end_pose_, des_state_vec_);
 			traj_pt_i_ = 0;
 			npts_traj_ = des_state_vec_.size();
@@ -431,6 +435,37 @@ void DesStatePublisher::pub_next_state() {
 
 }
 
+//void DesStatePublisher::updateTransform() {
+//
+//	//ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
+//
+//	//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
+//	if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
+//
+//		bool failure = true;
+//		ROS_INFO("EYYY can transform, waiting for pose transform...");
+//		while (failure) {
+//			failure = false;
+//			try {
+//				//tfListener.transformPose("map",uncorrectedPoseStamped,correctedPoseStamped);
+//
+//				//   tfListener.transformPose("map",uncorrectedPoseStamped.header.stamp,uncorrectedPoseStamped,"odom",correctedPoseStamped);
+//
+//				tfListener.lookupTransform("map", "odom", ros::Time(0), odom_to_map);
+//
+//			} catch (tf::TransformException &exception) {
+//				ROS_WARN("%s; retrying lookup!!!", exception.what());
+//				failure = true;
+//				ros::Duration(0.5).sleep(); // sleep for half a second
+//			}
+//		}
+//	}
+//	else {
+//		ROS_WARN("TEARS can't transform");
+//	}
+//
+//}
+
 geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_msgs::PoseStamped uncorrectedPoseStamped, bool toMap) {
 
 	double x = odom_to_map.getOrigin().x();
@@ -444,7 +479,7 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 		//ROS_INFO("TRYING TO CORRECT... x,y before: %f, %f", uncorrectedPoseStamped.pose.position.x, uncorrectedPoseStamped.pose.position.y);
 
 		//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
-		if (tfListener.waitForTransform("map","odom",uncorrectedPoseStamped.header.stamp, ros::Duration(3.0))) {
+		if (tfListener.waitForTransform("map","odom",ros::Time(0), ros::Duration(3.0))) {
 
 			bool failure = true;
 			ROS_INFO("EYYY can transform, waiting for pose transform...");
