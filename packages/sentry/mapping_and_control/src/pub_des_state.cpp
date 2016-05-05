@@ -121,14 +121,8 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
 	ROS_INFO("appending path queue with %d points", npts);
 	for (int i = 0; i < npts; i++) {
 
-
-
-
 		updateTransform();
 		path_queue_.push(request.path.poses[i]); //should be coming in as map coordinates already
-
-
-
 	}
 	return true;
 }
@@ -378,6 +372,8 @@ void DesStatePublisher::pub_next_state() {
 	case DONE_W_SUBGOAL: //suspended, pending a new subgoal
 		//see if there is another subgoal is in queue; if so, use
 		//it to compute a new trajectory and change motion mode
+
+		updateTransform();
 
 		if (return_path_stack.empty()) {
 			ROS_INFO("return_path_stack got its first point");
