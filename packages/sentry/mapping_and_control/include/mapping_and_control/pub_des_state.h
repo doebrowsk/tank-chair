@@ -122,7 +122,10 @@ private:
     ros::Subscriber tf_subscriber_;
     //geometry_msgs::Transform drift_correct_transform;
 
+
     // member methods:
+    void updateTransform();
+
     void initializePublishers();
     void initializeServices();
     bool estopServiceCallback(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
