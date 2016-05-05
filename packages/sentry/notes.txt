@@ -48,18 +48,20 @@ pub_des_state.h
 traj_builder.h
 
 
-Startup:
 
+
+
+
+
+Startup:
 
 plug in robot
 flip circuit breaker
 turn on computer
 hit rem estop to turn on motor controller (check lights)
 
-
-
-plug ethernet into router and antenna power thing
-plug ethernet in to antenna power thing and antenna
+plug ethernet into router and antenna power supply //don't uses port 1 on router
+plug ethernet in to antenna power suppy and antenna
 
 {
 plug ethernet into router and computer
@@ -80,59 +82,41 @@ alias babs_master='export ROS_MASTER_URI=http://192.168.1.100:11311'
 export ROS_IP=(inet addr) #or whatever ifconfig says your ip is
 
 //convenience:
-export ROS_IP=10.211.55.4; export ROS_MASTER_URI=http://192.168.1.100:11311; ssh babs@192.168.1.100
+export ROS_IP=192.168.1.128; export ROS_MASTER_URI=http://192.168.1.100:11311; ssh babs@192.168.1.100
 
 ssh babs@192.168.1.100 //ping 192.168.1.100 if necessary
 
 {
-./just_do_it.sh //enter password 1lmiagmc!...
-//restart until rostopic echo odom shows changes
+./just_do_it.sh //on babs, enter password 1lmiagmc!...
+//restart twice or until rostopic echo odom shows changes
 }
 
-roslaunch sentry_urdf legacy.launch
+rqt_console //on computer
+
+roslaunch sentry_urdf legacy.launch //on babs
 
 {
 //to change control mode
-./auto_mode.sh
+./auto_mode.sh //on babs
 //OR
-rostopic pub /cmd_mode std_msgs/Int32 1
+rostopic pub /cmd_mode std_msgs/Int32 1 //on babs
 }
 
-roslaunch sentry_urdf start_rviz.launch
+roslaunch sentry_urdf start_rviz.launch //on computer
 
 
-
-//joystick
-./joy_mode.sh
 
 //go home
 ./go_home.sh
+
+//joystick
+./joy_mode.sh
 
 //un-ssh
 logout
 
 //for teleop
 rosrun sentry_teleop sentry_joy
-
-
-
-roslaunch sentry_urdf start_physical_robot.launch
-babs_master //to share topics
-roslaunch sentry_urdf start_rviz.launch
-
-
-FOR REAL ROBOT
-roslaunch sentry_urdf start_physical_robot.launch
-#rosrun robot_state_publisher robot_state_publisher
-#rosrun amcl_control pub_des_state_startup
-#rosrun odom_tf odom_tf
-#rosrun amcl_control lin_steering
-#rosrun gmapping slam_gmapping scan:=/scan
-#rosrun amcl_control amcl_path_client
-
-
-
-
 
 #for meessages published via rosinfo
 rqt_console
@@ -150,6 +134,18 @@ rqt_logger_level
 vim filename
 esc-i //to edit 
 esc:wq //to exit
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
