@@ -201,7 +201,6 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
 	else {
 		ROS_WARN("Robot not drunk enough to go home");
 	}
-	ROS_WARN("EXITING goHomeRobotYoureDrunk");
     std::stack<geometry_msgs::PoseStamped> newStack;
     return_path_stack = newStack;
 
@@ -369,11 +368,10 @@ void DesStatePublisher::pub_next_state() {
 			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
 			//return_path_stack.push(poseToAdd);
 			//			}
-
+			ROS_INFO("DONE WITH SUBGOAL: x = %f, y= %f", path_queue_.front().pose.position.x, path_queue_.front().pose.position.y);
 			if (!path_queue_.empty()) {
 				path_queue_.pop(); // done w/ this subgoal; remove from the queue
 			}
-			ROS_INFO("DONE WITH SUBGOAL: x = %f, y= %f", current_pose_.pose.position.x, current_pose_.pose.position.y);
 		}
 		break;
 
@@ -405,7 +403,8 @@ void DesStatePublisher::pub_next_state() {
 			traj_pt_i_ = 0;
 			npts_traj_ = des_state_vec_.size();
 			motion_mode_ = PURSUING_SUBGOAL; // got a new plan; change mode to pursue it
-			ROS_INFO("PURSUING SUBGOAL");
+			ROS_INFO("PURSUING SUBGOAL: x = %f, y= %f", path_queue_.front().pose.position.x, path_queue_.front().pose.position.y);
+
 		} else { //no new goal? stay halted in this mode
 
 			//ROS_WARN("DONE 2, current_state_ x,y = (%f,%f)", current_state_.pose.pose.position.x, current_state_.pose.pose.position.y);
@@ -493,14 +492,14 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 	double ogPsi = trajBuilder_.convertPlanarQuat2Psi(correctedPoseStamped.pose.orientation);
 
 	if (toMap) {
-		correctedPoseStamped.pose.position.x -= x;
-		correctedPoseStamped.pose.position.y -= y;
-		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi - psi);
-	}
-	else {
 		correctedPoseStamped.pose.position.x += x;
 		correctedPoseStamped.pose.position.y += y;
 		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
+	}
+	else {
+		correctedPoseStamped.pose.position.x -= x;
+		correctedPoseStamped.pose.position.y -= y;
+		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi - psi);
 	}
 
 	//ROS_INFO("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
