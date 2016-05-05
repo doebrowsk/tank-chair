@@ -127,6 +127,8 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
 		updateTransform();
 		path_queue_.push(request.path.poses[i]); //should be coming in as map coordinates already
 
+
+
 	}
 	return true;
 }
@@ -158,44 +160,6 @@ void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) {
 	stfBaseLinkWrtOdom_.child_frame_id_ = "base_link";
 
 	br_.sendTransform(stfBaseLinkWrtOdom_);
-
-	//look at the odom, if we've moved significantly, append a path point to our return path
-	geometry_msgs::PoseStamped poseToAdd;
-	poseToAdd.pose = current_state_.pose.pose;
-	poseToAdd.header = current_state_.header;
-
-	if (return_path_stack.empty()) {
-		ROS_INFO("return_path_stack got its first point");
-		return_path_stack.push(get_corrected_des_state(poseToAdd,true));
-		//return_path_stack.push(poseToAdd);
-
-	}
-	else {
-		//only add a point if we've moved at least return_path_point_spacing meter
-		//and our heading is different by at least
-
-		geometry_msgs::PoseStamped topPoseInStack = get_corrected_des_state(return_path_stack.top(),false);
-		//geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();
-
-		double currentX = current_state_.pose.pose.position.x;
-		double currentY = current_state_.pose.pose.position.y;
-		double lastX = topPoseInStack.pose.position.x;
-		double lastY = topPoseInStack.pose.position.y;
-		double dist = sqrt(pow(lastX - currentX,2) + pow(lastY - currentY,2));  //thanks pythagoras, you da man
-
-		double current_psi = trajBuilder_.convertPlanarQuat2Psi(current_state_.pose.pose.orientation);
-		double last_psi = trajBuilder_.convertPlanarQuat2Psi(topPoseInStack.pose.orientation);
-		double psiDiff = abs(current_psi - last_psi);
-		//ROS_INFO("(currentX, currentY, lastX, lastY,current_psi,last_psi = %f, %f, %f, %f, %f, %f)",currentX, currentY, lastX, lastY,current_psi,last_psi);
-
-		//ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
-
-		if (dist >= return_path_point_spacing || psiDiff >= return_path_delta_phi) {
-			ROS_INFO("return_path_stack got a point");
-			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
-			return_path_stack.push(poseToAdd);
-		}
-	}
 }
 
 void DesStatePublisher::cmdModeCallback(const std_msgs::Int32& message_holder) {
@@ -379,16 +343,46 @@ void DesStatePublisher::pub_next_state() {
 		if (traj_pt_i_ >= npts_traj_) {
 			motion_mode_ = DONE_W_SUBGOAL; //if so, indicate we are done
 			seg_end_state_ = des_state_vec_.back(); // last state of traj
+
+			geometry_msgs::PoseStamped poseToAdd;
+			poseToAdd.pose = current_state_.pose.pose;
+			poseToAdd.header = current_state_.header;
+			//			geometry_msgs::PoseStamped topPoseInStack = get_corrected_des_state(return_path_stack.top(),false);
+			//			//geometry_msgs::PoseStamped topPoseInStack = return_path_stack.top();
+			//			double currentX = current_state_.pose.pose.position.x;
+			//			double currentY = current_state_.pose.pose.position.y;
+			//			double lastX = topPoseInStack.pose.position.x;
+			//			double lastY = topPoseInStack.pose.position.y;
+			//			double dist = sqrt(pow(lastX - currentX,2) + pow(lastY - currentY,2));  //thanks pythagoras, you da man
+			//			double current_psi = trajBuilder_.convertPlanarQuat2Psi(current_state_.pose.pose.orientation);
+			//			double last_psi = trajBuilder_.convertPlanarQuat2Psi(topPoseInStack.pose.orientation);
+			//			double psiDiff = abs(current_psi - last_psi);
+			//			//ROS_INFO("(currentX, currentY, lastX, lastY,current_psi,last_psi = %f, %f, %f, %f, %f, %f)",currentX, currentY, lastX, lastY,current_psi,last_psi);
+			//			//ROS_INFO("(dist >= return_path_point_spacing) && (psiDiff >= return_path_delta_phi) = (%f >= %f) && (%f >= %f)",dist,return_path_point_spacing,psiDiff,return_path_delta_phi);
+			//			if (dist >= return_path_point_spacing || psiDiff >= return_path_delta_phi) {
+			ROS_INFO("return_path_stack got a point");
+			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
+			//return_path_stack.push(poseToAdd);
+			//			}
+
 			if (!path_queue_.empty())
 				path_queue_.pop(); // done w/ this subgoal; remove from the queue
-			ROS_INFO("DONE WITH SUBGOAL: x = %f, y= %f", current_pose_.pose.position.x,
-					current_pose_.pose.position.y);
+			ROS_INFO("DONE WITH SUBGOAL: x = %f, y= %f", current_pose_.pose.position.x, current_pose_.pose.position.y);
 		}
 		break;
 
 	case DONE_W_SUBGOAL: //suspended, pending a new subgoal
 		//see if there is another subgoal is in queue; if so, use
 		//it to compute a new trajectory and change motion mode
+
+		if (return_path_stack.empty()) {
+			ROS_INFO("return_path_stack got its first point");
+			geometry_msgs::PoseStamped poseToAdd;
+			poseToAdd.pose = current_state_.pose.pose;
+			poseToAdd.header = current_state_.header;
+			return_path_stack.push(get_corrected_des_state(poseToAdd,true));
+		}
+
 		if (!path_queue_.empty()) {
 
 			//ROS_WARN("DONE 1");
@@ -432,7 +426,7 @@ void DesStatePublisher::pub_next_state() {
 void DesStatePublisher::updateTransform() {
 
 	//    if (tfListener.canTransform("map","odom",uncorrectedPoseStamped.header.stamp)) {
-//	if (tfListener.waitForTransform("map","odom",ros::Time(0), ros::Duration(3.0))) {
+	//	if (tfListener.waitForTransform("map","odom",ros::Time(0), ros::Duration(3.0))) {
 	if (tfListener.canTransform("map","odom",ros::Time(0))) {
 
 		bool failure = true;
