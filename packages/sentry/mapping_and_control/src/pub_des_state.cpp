@@ -201,6 +201,11 @@ void DesStatePublisher::goHomeRobotYoureDrunk(const std_msgs::Int32& message_hol
 	else {
 		ROS_WARN("Robot not drunk enough to go home");
 	}
+	ROS_WARN("EXITING goHomeRobotYoureDrunk");
+    std::stack<geometry_msgs::PoseStamped> newStack;
+    return_path_stack = newStack;
+
+
 }
 
 // void DesStatePublisher::tfCallback(const tf2_msgs::TFMessage& tf_message) {
@@ -365,8 +370,9 @@ void DesStatePublisher::pub_next_state() {
 			//return_path_stack.push(poseToAdd);
 			//			}
 
-			if (!path_queue_.empty())
+			if (!path_queue_.empty()) {
 				path_queue_.pop(); // done w/ this subgoal; remove from the queue
+			}
 			ROS_INFO("DONE WITH SUBGOAL: x = %f, y= %f", current_pose_.pose.position.x, current_pose_.pose.position.y);
 		}
 		break;
@@ -446,6 +452,12 @@ void DesStatePublisher::updateTransform() {
 				ros::Duration(0.5).sleep(); // sleep for half a second
 			}
 		}
+
+		double x = odom_to_map.getOrigin().x();
+		double y = odom_to_map.getOrigin().y();
+		double psi = odom_to_map.getRotation().getAngle();
+
+		ROS_INFO("transform (x,y,psi) is (%f,%f,%f)",x,y,psi);
 	}
 	else {
 		ROS_WARN("TEARS can't transform");
@@ -481,14 +493,14 @@ geometry_msgs::PoseStamped DesStatePublisher::get_corrected_des_state(geometry_m
 	double ogPsi = trajBuilder_.convertPlanarQuat2Psi(correctedPoseStamped.pose.orientation);
 
 	if (toMap) {
-		correctedPoseStamped.pose.position.x += x;
-		correctedPoseStamped.pose.position.y += y;
-		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
-	}
-	else {
 		correctedPoseStamped.pose.position.x -= x;
 		correctedPoseStamped.pose.position.y -= y;
 		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi - psi);
+	}
+	else {
+		correctedPoseStamped.pose.position.x += x;
+		correctedPoseStamped.pose.position.y += y;
+		correctedPoseStamped.pose.orientation = trajBuilder_.convertPlanarPsi2Quaternion(ogPsi + psi);
 	}
 
 	//ROS_INFO("AFTER: x,y %f, %f", correctedPoseStamped.pose.position.x, correctedPoseStamped.pose.position.y);
