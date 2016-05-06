@@ -22,7 +22,7 @@ nav_msgs::Odometry g_drifty_odom;
 sensor_msgs::JointState g_joint_state;
 ros::Publisher g_drifty_odom_pub;
 ros::Subscriber g_joint_state_subscriber;
-//tf::TransformBroadcaster* g_odom_broadcaster_ptr;
+tf::TransformBroadcaster* g_odom_broadcaster_ptr;
 geometry_msgs::TransformStamped g_odom_trans;
 
 double g_new_left_wheel_ang, g_old_left_wheel_ang;
@@ -101,6 +101,23 @@ void joint_state_CB(const sensor_msgs::JointState& joint_states) {
         g_drifty_odom.twist.twist.angular.z = dpsi / g_dt;
         g_drifty_odom.header.stamp = g_cur_time;
         g_drifty_odom_pub.publish(g_drifty_odom);
+
+
+        geometry_msgs::TransformStamped odom_trans;
+        odom_trans.header.stamp = ros::Time::now();
+        odom_trans.header.frame_id = "odom";
+        odom_trans.child_frame_id = "base_link";
+     
+        odom_trans.transform.translation.x = g_drifty_odom.pose.pose.position.x;
+        odom_trans.transform.translation.y = g_drifty_odom.pose.pose.position.y;
+        odom_trans.transform.translation.z = 0.0;
+
+        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(g_odom_psi);
+
+        odom_trans.transform.rotation = odom_quat;
+
+        g_odom_broadcaster_ptr->sendTransform(odom_trans);
+
 //        ROS_INFO("%f",g_odom_psi/3.14159);
     }
 }
