@@ -240,9 +240,6 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 	}
 }
 
-void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
-}
-
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "tangent_bug"); //name this node
 	ros::NodeHandle nh;
