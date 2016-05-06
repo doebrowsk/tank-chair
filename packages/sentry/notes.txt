@@ -40,6 +40,10 @@ roslaunch sentry_urdf ground_plane_with_sentry.launch
 #rosrun gmapping slam_gmapping scan:=/scan
 #rosrun amcl_control amcl_path_client
 
+rostopic pub /cmd_mode std_msgs/Int32 1
+
+rosrun tangent_bug tangent_bug_main
+
 FOR REAL ROBOT
 roslaunch sentry_urdf start_physical_robot.launch
 #rosrun robot_state_publisher robot_state_publisher

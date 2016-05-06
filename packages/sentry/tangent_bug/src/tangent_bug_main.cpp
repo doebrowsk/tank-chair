@@ -113,8 +113,8 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 					next_point.y = currentPoint.y + deltaY;
 				}
 				else {
-
-					double last_ping_dist = laser_scan.ranges[0];
+					double last_ping_index = 90;
+					double last_ping_dist = laser_scan.ranges[last_ping_index];
 
 					//go to the goal if we can see it
 					if (distToGoal < last_ping_dist) {
@@ -124,8 +124,6 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 					}
 					else {
 						ROS_INFO("Tangent bug generating new point");
-						double last_ping_index = 90;
-						last_ping_dist = laser_scan.ranges[last_ping_index];
 						bool foundBreakLeft = false;
 						bool foundBreakRight = false;
 						double num_pings = 180;
@@ -240,6 +238,9 @@ void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 		break;
 	}
 	}
+}
+
+void laserCallback(const sensor_msgs::LaserScan& laser_scan) {
 }
 
 int main(int argc, char **argv) {
