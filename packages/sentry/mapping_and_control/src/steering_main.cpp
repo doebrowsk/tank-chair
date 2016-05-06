@@ -160,6 +160,18 @@ void pointClickCallback(const geometry_msgs::PointStamped& pointStamped) {
 
 }
 
+void tangentBugCallback(const geometry_msgs::PointStamped& pointStamped) {
+
+	mapping_and_control::path path_srv;
+	pose.position.x = pointStamped.point.x;
+	pose.position.y = pointStamped.point.y;
+	pose_stamped.pose = pose;
+	path_srv.request.path.poses.push_back(pose_stamped);
+	ROS_INFO("Tangent bug appending point (%f, %f) to path", pointStamped.point.x, pointStamped.point.y);
+	append_client.call(path_srv);
+
+}
+
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "append_path_client");
 	ros::NodeHandle n;
@@ -202,6 +214,9 @@ int main(int argc, char **argv) {
 
 	ros::Subscriber point_click_subscriber = n.subscribe("clicked_point", 1, pointClickCallback);
 	ros::Subscriber motion_mode_subscriber = n.subscribe("motion_mode", 1, motionModeCallback);
+
+	ros::Subscriber tangent_bug_subscriber = n.subscribe("bug_point", 1, tangentBugCallback);
+
 
 	ros::spin(); //this is essentially a "while(1)" statement, except it
 	// forces refreshing wakeups upon new data arrival

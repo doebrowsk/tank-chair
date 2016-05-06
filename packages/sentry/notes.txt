@@ -40,6 +40,15 @@ roslaunch sentry_urdf ground_plane_with_sentry.launch
 #rosrun gmapping slam_gmapping scan:=/scan
 #rosrun amcl_control amcl_path_client
 
+FOR REAL ROBOT
+roslaunch sentry_urdf start_physical_robot.launch
+#rosrun robot_state_publisher robot_state_publisher
+#rosrun amcl_control pub_des_state_startup
+#rosrun odom_tf odom_tf
+#rosrun amcl_control lin_steering
+#rosrun gmapping slam_gmapping scan:=/scan
+#rosrun amcl_control amcl_path_client
+
 DIFF: 
 
 params changed:

@@ -5,11 +5,11 @@
 ros::Publisher scanpub;
 
 void scancb(const sensor_msgs::LaserScan& message_holder){
-	float radius = 0.55;//expansion of each scan
+	float radius = 1.5;//expansion of each scan
 	sensor_msgs::LaserScan cspace_scan = message_holder;
 	cspace_scan.range_min = 0;
-	for (int scantofill = 0; scantofill < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;scantofill++){
-		for (int compare = 0; compare < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment;compare++){
+	for (int scantofill = 0; scantofill < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment + 1;scantofill++){
+		for (int compare = 0; compare < (message_holder.angle_max - message_holder.angle_min)/message_holder.angle_increment + 1;compare++){
 			float distance = message_holder.ranges[compare];
 			if (distance < radius){
 				cspace_scan.ranges[scantofill]=0.0;

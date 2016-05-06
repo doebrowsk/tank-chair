@@ -35,8 +35,9 @@
     <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" output="screen"/>
   </group>
 
-<!-- load the model "starting_pen" into Gazebo -->
+<!-- load the model "starting_pen" into Gazebo
 <node name="spawn_sdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find exmpl_models)/starting_pen/model.sdf -sdf -model starting_pen -y -5" />
+-->
 
   <!-- Convert an xacro and put on parameter server -->
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find sentry_urdf)/urdf/sentry.xacro'" />
@@ -47,13 +48,19 @@
 
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sentry_urdf)/rviz_config/sentry.rviz"/>
 
+
 <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
 
 <node name="lidar" pkg="mapping_and_control" type="lidar" />
 
-<node pkg="tf" type="static_transform_publisher" name="base_laser1_broadcaster" args="0.5 0 0.4 0 0 0 base_link base_laser1_link 100" />
 
-<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan _base_frame:=base_laser1_link"/>
+<node pkg="tf" type="static_transform_publisher" name="lidar_link_broadcaster" args="0.5 0 0.4 0 0 0 base_link lidar_link 100" />
+
+
+<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan _base_frame:=lidar_link"/>
+
+<node name="scan_expander" pkg="gps_bug" type="scan_expander" />
 
 <node name="pub_des_state_startup" pkg="mapping_and_control" type="pub_des_state_startup" />
 
@@ -64,6 +71,7 @@
 <node name="lin_steering" pkg="mapping_and_control" type="lin_steering" />
   
 <node name="path_client" pkg="mapping_and_control" type="path_client" />
+
 
 
 </launch>

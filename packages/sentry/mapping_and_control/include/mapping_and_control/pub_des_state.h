@@ -99,6 +99,10 @@ private:
     ros::ServiceServer append_path_;
     
     ros::Publisher desired_state_publisher_;
+
+    //published where we are RELATIVE TO MAP
+    ros::Publisher current_pose_publisher_;
+
     ros::Publisher des_psi_publisher_;
     ros::Publisher motion_mode_publisher_;
     

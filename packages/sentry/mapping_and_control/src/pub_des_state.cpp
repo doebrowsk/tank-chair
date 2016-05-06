@@ -79,6 +79,7 @@ void DesStatePublisher::initializeServices() {
 void DesStatePublisher::initializePublishers() {
 	ROS_INFO("Initializing Publishers");
 	desired_state_publisher_ = nh_.advertise<nav_msgs::Odometry>("/desState", 1, true);
+	current_pose_publisher_ = nh_.advertise<geometry_msgs::PoseStamped>("/currentPose", 1, true);
 	des_psi_publisher_ = nh_.advertise<std_msgs::Float64>("/desPsi", 1);
 	motion_mode_publisher_ = nh_.advertise<std_msgs::Int32>("/motion_mode", 1);
 }
@@ -130,6 +131,11 @@ bool DesStatePublisher::appendPathQueueCB(mapping_and_control::pathRequest& requ
 void DesStatePublisher::odomCallback(const nav_msgs::Odometry& odom_rcvd) { 
 
 	current_state_ = odom_rcvd;
+
+	geometry_msgs::PoseStamped tmpPoseStamped;
+	tmpPoseStamped.pose = current_state_.pose.pose;
+
+	current_pose_publisher_.publish(get_corrected_des_state(tmpPoseStamped,true));
 
 	geometry_msgs::Pose odom_pose_ = odom_rcvd.pose.pose;
 	geometry_msgs::Quaternion odom_quat_ = odom_rcvd.pose.pose.orientation;
@@ -430,7 +436,7 @@ void DesStatePublisher::updateTransform() {
 	if (tfListener.canTransform("map","odom",ros::Time(0))) {
 
 		bool failure = true;
-		ROS_INFO("EYYY can transform, waiting for pose transform...");
+		//ROS_INFO("EYYY can transform, waiting for pose transform...");
 		while (failure) {
 			failure = false;
 			try {
