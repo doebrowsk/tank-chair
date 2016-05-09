@@ -1,0 +1,55 @@
+user manual for B.A.B.S (Bayesian Autonomous Broadcasting Sentry)
+email hxy153@case.edu for questions
+
+ Table of contents
+
+	S1. quick start guide
+	S2. circuits
+	S3. motor controller
+	S4. sensors
+
+
+S1. 
+	To power up the robot, connect the batteries to the robot with the anderson sb50 plugs on the front.
+	Then close the 100 amp circuit breaker on the lower level of the robot.
+
+	To turn on the computer, press the little red power button (it should have some red tape on it)
+
+	ssh into the robot with "ssh babs@192.168.1.100"
+
+	run ./just_do_it.sh from home
+
+	this should start the motors, the encoders, odometry, lidar, GPS, and IMU
+
+notes: 
+	the odometry doesnt always start up on the first try, I usually have to start up the robot twice. Maybe it's because it takes a while for the motor controller to start sending feedback.
+	
+	There is a cmd_vel_switch node that takes in joystick/cmd_vel and rviz/cmd_vel and publishes them to cmd_vel. By default it is on joystick.
+
+S2.
+	The batteries that power the robot are 24 volts. 
+	This is connected to the circuit breaker.
+	From the circuit breaker, the motor controller is connected to power the motor and a power spike filter leads to everything else.
+	The power spike filter is made of a capacitor, diodes and an inductor to smooth out sudden changes in voltage that the motors may cause.
+	From there, the the lidar and the wifi antenna take 24 volts
+	There is then a 24-12 volt converter that feeds the computer, the gps, and the wireless e-stop.
+S3.
+	The connectors to each motor are color coded and keyed so you can't get them backwards
+	The motor controller is connected to the encoders through the molex 6-pin connector.
+	There is also an analog joystick for moving it around
+	All of the I/O for the motor controller is handled on the circuit board that is currently taped on top of the 24-12v converter
+	The motor controller communicates to the computer through the mini-USB cable
+
+	S3.1 MicroBasic scripting
+	The motor controller runs a script when it is communicating with the computer. This can be found in the Roboteq folder of this repo.
+	This can be edited and compiled using the windows Roborun utility
+	You can go in there if you want to edit the PID controller or try to increase the max speed of the robot.
+	The Ros launch will command the script to start on motor controller and will disable the analog joystick
+
+S4.
+	The robot has 4 main sensors: encoders, lidar, GPS, IMU
+	ensure that the path to each device is the same as the path that the robot expects.
+	The motor controller and the encoders are on /dev/ttyACM0 and the other sensors are on /dev/ttyUSB[0-2]
+
+
+
