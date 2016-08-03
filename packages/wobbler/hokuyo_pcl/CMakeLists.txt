@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ps1)
+project(hokuyo_pcl)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -103,21 +103,14 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(sentry_minimal_publisher src/minimal_publisher.cpp)
-add_executable(sentry_minimal_subscriber src/minimal_subscriber.cpp)
-add_executable(sentry_minimal_simulator src/minimal_simulator.cpp)
-add_executable(sentry_minimal_controller src/minimal_controller.cpp)
-add_executable(sentry_minimal_commander src/minimal_commander.cpp)
+add_executable(hokuyo_pcl/hokuyo_pcl.cpp);
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(minimal_nodes_node minimal_nodes_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(sentry_minimal_publisher  ${catkin_LIBRARIES} )
-target_link_libraries(sentry_minimal_subscriber  ${catkin_LIBRARIES} )
-target_link_libraries(sentry_minimal_simulator  ${catkin_LIBRARIES} )
-target_link_libraries(sentry_minimal_controller  ${catkin_LIBRARIES} )
-target_link_libraries(sentry_minimal_commander  ${catkin_LIBRARIES} )
+target_link_libraries(hokuyo_pcl  ${catkin_LIBRARIES} )
+
 #############
 ## Install ##
 #############
